@@ -83,6 +83,9 @@ public class main_video extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+
+
+
         if(requestCode==PICK_VIDEO || resultCode ==RESULT_OK ||
         data != null || data.getData()!= null){
             videoUri=data.getData();
