@@ -1,4 +1,4 @@
-package com.example.myapp;
+package ch.epfl.esl.dronereporter;
 
 public class Member_video {
 

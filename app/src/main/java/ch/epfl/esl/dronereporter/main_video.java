@@ -1,4 +1,4 @@
-package com.example.myapp;
+package ch.epfl.esl.dronereporter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
