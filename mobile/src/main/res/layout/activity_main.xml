@@ -51,7 +51,7 @@
         android:id="@+id/mainIconImageView"
         android:layout_width="wrap_content"
         android:layout_height="300dp"
-        android:src="@drawable/drone"
+        android:src="@mipmap/drone_icon"
         app:layout_constraintBottom_toTopOf="@+id/presenterModeButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
