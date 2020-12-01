@@ -35,10 +35,23 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:19.2.0'
     implementation 'com.google.firebase:firebase-database:19.2.1'
     // implementation 'com.firebaseui:firebase-ui database: 6.2.0'
+    compile 'com.android.support:support-annotations:+'
 
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     wearApp project(":wear")
+
+    //compile fileTree(dir: 'libs', include: ['*.jar'])
+    //testCompile 'junit:junit:4.12'
+    implementation 'com.android.support:appcompat-v7:24.2.0'
+
+    if (rootProject.hasProperty('buildWithLocalSDK')){
+        compile project(':arsdk')
+    } else {
+        compile 'com.parrot:arsdk:3.14.0'
+    }
+
+
 }
