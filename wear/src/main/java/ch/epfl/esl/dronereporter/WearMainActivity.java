@@ -3,9 +3,10 @@ package ch.epfl.esl.dronereporter;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
+import android.view.View;
 import android.widget.TextView;
 
-public class MainActivity extends WearableActivity {
+public class WearMainActivity extends WearableActivity {
 
     private TextView mTextView;
 
@@ -23,5 +24,8 @@ public class MainActivity extends WearableActivity {
 
         // Enables Always-on
         setAmbientEnabled();
+    }
+
+    public void engagePresenterMode(View view) {
     }
 }
