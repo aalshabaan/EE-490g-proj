@@ -1,5 +1,0 @@
-
-include ':wear'
-include ':mobile'
-rootProject.name = "Drone Reporter"
-
