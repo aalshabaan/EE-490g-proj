@@ -18,6 +18,38 @@ allprojects {
         google()
         jcenter()
     }
+
+    // Constants defined for all modules, to avoid typing mistakes
+// We use it for communication using the Wear API
+// It is a key-value mapping, auto-prefixed with ”W_” for convenience
+    project.ext {
+        constants = [
+                path_start_activity : "/START_ACTIVITY",
+                path_stop_activity  : "/STOP_ACTIVITY",
+                path_acknowledge    : "/ACKNOWLEDGE",
+
+                example_path_asset  : "/ ASSET ",
+                example_path_text   : "/TEXT",
+                example_path_datamap: "/DATAMAP",
+
+                mainactivity        : "MainActivity",
+                recordingactivity   : "RecordingActivity",
+                wearreporteractivity: "WearReporterActivity",
+
+                a_key               : "a_value",
+                some_other_key      : "some_other_value",
+
+                profile_path        : "/PROFILE",
+                profile_key         : "profile",
+
+                heart_rate_path     : "/HEART_RATE",
+                heart_rate_key      : "heart_rate",
+
+                location_path       : "/LOCATION",
+                longitude_key       : "longitude",
+                latitude_key        : "latitude",
+        ]
+    }
 }
 
 task clean(type: Delete) {

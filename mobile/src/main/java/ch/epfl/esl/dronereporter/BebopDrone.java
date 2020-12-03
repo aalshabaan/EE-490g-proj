@@ -40,6 +40,15 @@ public class BebopDrone {
 
     public interface Listener {
         /**
+         * Called when the position of the drone changes
+         * Called in the main thread
+         * @param latitude latitude of the drone
+         * @param longitude longitude of the drone
+         * @param altitude altitude of the drone
+         */
+        void onPositionChanged(double latitude, double longitude, double altitude);
+
+        /**
          * Called when the connection to the drone changes
          * Called in the main thread
          * @param state the state of the drone
@@ -345,6 +354,14 @@ public class BebopDrone {
     }
 
     //region notify listener block
+    private void notifyPositionChanged(double latitude, double longitude, double altitude) {
+        List<Listener> listenersCpy = new ArrayList<>(mListeners);
+        for (Listener listener : listenersCpy) {
+            listener.onPositionChanged(latitude, longitude, altitude);
+        }
+    }
+
+
     private void notifyConnectionChanged(ARCONTROLLER_DEVICE_STATE_ENUM state) {
         List<Listener> listenersCpy = new ArrayList<>(mListeners);
         for (Listener listener : listenersCpy) {
@@ -464,6 +481,30 @@ public class BebopDrone {
 
         @Override
         public void onCommandReceived(ARDeviceController deviceController, ARCONTROLLER_DICTIONARY_KEY_ENUM commandKey, ARControllerDictionary elementDictionary) {
+            // if the position of the drone changed
+            /*
+            if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_POSITIONCHANGED) && (elementDictionary != null)){
+                ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                if (args != null) {
+                    double latitude = (double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_POSITIONCHANGED_LATITUDE);
+                    double longitude = (double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_POSITIONCHANGED_LONGITUDE);
+                    double altitude = (double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_POSITIONCHANGED_ALTITUDE);
+                    notifyPositionChanged(latitude,longitude,altitude);
+                }
+            } */
+
+            // if the attitude of the drone changed
+            if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_ATTITUDECHANGED) && (elementDictionary != null)){
+                ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                if (args != null) {
+                    float roll = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_ATTITUDECHANGED_ROLL)).doubleValue();
+                    float pitch = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_ATTITUDECHANGED_PITCH)).doubleValue();
+                    float yaw = (float)((Double)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_ATTITUDECHANGED_YAW)).doubleValue();
+                    notifyPositionChanged(roll, pitch, yaw);
+                }
+            }
+
+
             // if event received is the battery update
             if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED) && (elementDictionary != null)) {
                 ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);

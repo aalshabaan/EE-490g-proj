@@ -33,10 +33,9 @@ import java.util.List;
 
 public class WearService extends WearableListenerService {
 
-    public static final String LONGITUDE = "LONGITUDE";
-    public static final String LATITUDE = "LATITUDE";
+    public static final String ACTIVITY_TO_START = "ACTIVITY_TO_START";
     // Tag for Logcat
-    private static final String TAG = "WearService";
+    private static final String TAG = "WearService mobile";
 
     // Actions defined for the onStartCommand(...)
     public enum ACTION_SEND {
@@ -55,13 +54,13 @@ public class WearService extends WearableListenerService {
         ACTION_SEND action = ACTION_SEND.valueOf(intent.getAction());
         PutDataMapRequest putDataMapRequest;
         switch (action) {
-            case LOCATION:
-                Log.d(TAG, "Start sending location");
-                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_location_path);
-                putDataMapRequest.getDataMap().putDouble(BuildConfig.W_latitude_key, intent
-                        .getDoubleExtra(LATITUDE, -1));
-                putDataMapRequest.getDataMap().putDouble(BuildConfig.W_longitude_key, intent
-                        .getDoubleExtra(LONGITUDE, -1));
+            case STARTACTIVITY:
+                String activity = intent.getStringExtra(ACTIVITY_TO_START);
+                sendMessage(activity, BuildConfig.W_path_start_activity);
+                Log.d(TAG, "start activity, sending message");
+                break;
+            case EXAMPLE_DATAMAP:
+                putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_datamap);
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
             default:
@@ -83,26 +82,6 @@ public class WearService extends WearableListenerService {
                 + "\", from node " + messageEvent.getSourceNodeId());
 
         switch (path) {
-            case BuildConfig.W_path_start_activity:
-                Log.v(TAG, "Message asked to open Activity");
-                Intent startIntent = null;
-                switch (data) {
-                    case BuildConfig.W_mainactivity:
-                        startIntent = new Intent(this, WearMainActivity.class);
-                        break;
-                    case BuildConfig.W_wearreporteractivity:
-                        Log.d(TAG, "Start recording message received");
-                        startIntent = new Intent(this, WearReporterActivity.class);
-                        break;
-                }
-
-                if (startIntent == null) {
-                    Log.w(TAG, "Asked to start unhandled activity: " + data);
-                    return;
-                }
-                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(startIntent);
-                break;
             default:
                 Log.w(TAG, "Received a message for unknown path " + path + " : " + data);
         }
@@ -131,6 +110,17 @@ public class WearService extends WearableListenerService {
 
                 assert uri.getPath() != null;
                 switch (uri.getPath()) {
+                    case BuildConfig.W_location_path:
+                        Log.v(TAG, "Location from the watch");
+                        double longitude = dataMapItem.getDataMap().getDouble(BuildConfig
+                                .W_longitude_key);
+                        double latitude = dataMapItem.getDataMap().getDouble(BuildConfig
+                                .W_latitude_key);
+                        intent = new Intent(ReporterActivity.RECEIVED_LOCATION);
+                        intent.putExtra(ReporterActivity.LONGITUDE, longitude);
+                        intent.putExtra(ReporterActivity.LATITUDE, latitude);
+                        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                        break;
                     default:
                         Log.v(TAG, "Data changed for unhandled path: " + uri);
                         break;

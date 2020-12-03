@@ -1,12 +1,11 @@
 package ch.epfl.esl.dronereporter;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this, DeviceListActivity.class);
         i.putExtra(MODE, mode);
         startActivity(i);
+
     }
 
     public void reviewFootage(View view){
