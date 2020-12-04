@@ -44,7 +44,8 @@ public class BebopActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
-        mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
+        //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
+        mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
 
     }
