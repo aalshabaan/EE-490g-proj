@@ -19,8 +19,12 @@ import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 
-public class BebopActivity extends AppCompatActivity {
-    private static final String TAG = "BebopActivity";
+public class ReporterActivity extends AppCompatActivity {
+    private static final String TAG = "ReporterActivity";
+    public static final String RECEIVED_LOCATION = "RECEIVE_LOCATION";
+    public static final String LONGITUDE = "LONGITUDE";
+    public static final String LATITUDE = "LATITUDE";
+
     private BebopDrone mBebopDrone;
 
     private ProgressDialog mConnectionProgressDialog;
@@ -29,6 +33,8 @@ public class BebopActivity extends AppCompatActivity {
     private H264VideoView mVideoView;
 
     private TextView mBatteryLabel;
+    private TextView mLatitudeText;
+    private TextView mLongitudeText;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
 
@@ -38,13 +44,13 @@ public class BebopActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bebop);
+        setContentView(R.layout.activity_reporter);
 
         initIHM();
 
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
-        mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
+        mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
 
     }
@@ -92,8 +98,24 @@ public class BebopActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void initIHM() {
+    public void startPositionOnWear(View view) {
+        Log.d(TAG, "connecting to the watch");
+        Intent intentStartRec = new Intent(ReporterActivity.this, WearService.class);
+        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
+        startService(intentStartRec);
+    }
+
+
+        private void initIHM() {
         mVideoView = (H264VideoView) findViewById(R.id.videoView);
+
+        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.emergency();
+            }
+        });
+
 
         findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -129,7 +151,7 @@ public class BebopActivity extends AppCompatActivity {
             public void onClick(View v) {
                 mBebopDrone.getLastFlightMedias();
 
-                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
+                mDownloadProgressDialog = new ProgressDialog(ReporterActivity.this, R.style.AppCompatAlertDialogStyle);
                 mDownloadProgressDialog.setIndeterminate(true);
                 mDownloadProgressDialog.setMessage("Fetching medias");
                 mDownloadProgressDialog.setCancelable(false);
@@ -336,6 +358,9 @@ public class BebopActivity extends AppCompatActivity {
         });
 
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
+        mLatitudeText = findViewById(R.id.latitudeDrone);
+        mLongitudeText = findViewById(R.id.longitudeDrone);
+
     }
 
     private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
@@ -343,6 +368,10 @@ public class BebopActivity extends AppCompatActivity {
 
         @Override
         public void onPositionChanged(double latitude, double longitude, double altitude) {
+            //mLatitudeText.setText(String.format("%f", latitude));
+            //mLongitudeText.setText(String.format("%f", longitude));
+            Log.d(TAG, String.valueOf(latitude));
+            Log.d(TAG, "Thread position " + Thread.currentThread().getId());
 
         }
 
@@ -368,6 +397,8 @@ public class BebopActivity extends AppCompatActivity {
         @Override
         public void onBatteryChargeChanged(int batteryPercentage) {
             mBatteryLabel.setText(String.format("%d%%", batteryPercentage));
+            mLatitudeText.setText(String.format("%d%%", batteryPercentage));
+            Log.d(TAG, " Thread battery" + Thread.currentThread().getId());
         }
 
         @Override
@@ -413,7 +444,7 @@ public class BebopActivity extends AppCompatActivity {
             mCurrentDownloadIndex = 1;
 
             if (nbMedias > 0) {
-                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
+                mDownloadProgressDialog = new ProgressDialog(ReporterActivity.this, R.style.AppCompatAlertDialogStyle);
                 mDownloadProgressDialog.setIndeterminate(false);
                 mDownloadProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                 mDownloadProgressDialog.setMessage("Downloading medias");

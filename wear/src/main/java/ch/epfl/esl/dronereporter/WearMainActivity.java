@@ -1,6 +1,7 @@
 package ch.epfl.esl.dronereporter;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.view.View;
@@ -24,8 +25,12 @@ public class WearMainActivity extends WearableActivity {
 
         // Enables Always-on
         setAmbientEnabled();
+
     }
 
     public void engagePresenterMode(View view) {
+        Intent i = new Intent(this, WearReporterActivity.class);
+        //i.putExtra(MODE, mode);
+        startActivity(i);
     }
 }
