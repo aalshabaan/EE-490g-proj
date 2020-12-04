@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/batteryPercentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="XXX%"
+        android:textColor="@color/battery_green"
+        app:layout_constraintBottom_toTopOf="@id/mainIconImageView"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/batteryIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:contentDescription="Battery Icon"
+        android:src="@drawable/ic_battery_green_24"
+        app:layout_constraintBottom_toBottomOf="@id/batteryPercentage"
+
+        app:layout_constraintLeft_toRightOf="@id/batteryPercentage"
+        app:layout_constraintTop_toTopOf="@id/batteryPercentage" />
+
+    <Button
+        android:id="@+id/presenterModeButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="30dp"
+        android:onClick="engageDrone"
+        android:text="@string/presenter_mode"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/documenterModeButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/selectDroneButton" />
+
+    <Button
+        android:id="@+id/documenterModeButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
+        android:onClick="engageDrone"
+        android:text="@string/documenter_mode"
+        app:layout_constraintEnd_toStartOf="@id/footageReviewButton"
+        app:layout_constraintStart_toEndOf="@id/presenterModeButton"
+        app:layout_constraintBottom_toBottomOf="@id/presenterModeButton"
+        app:layout_constraintTop_toTopOf="@id/presenterModeButton" />
+
+    <Button
+        android:id="@+id/footageReviewButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="30dp"
+        android:text="@string/review_footage"
+        app:layout_constraintBottom_toBottomOf="@id/presenterModeButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/documenterModeButton"
+        android:onClick="reviewFootage"
+        app:layout_constraintTop_toTopOf="@id/presenterModeButton"/>
+
+    <Button
+        android:id="@+id/selectDroneButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="50dp"
+        android:text="@string/select_drone"
+        app:layout_constraintBottom_toTopOf="@id/presenterModeButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:onClick="selectDrone"
+        app:layout_constraintTop_toBottomOf="@id/mainIconImageView"/>
+
+    <ImageView
+        android:id="@+id/mainIconImageView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@mipmap/drone_icon"
+        android:layout_marginTop="30dp"
+        app:layout_constraintBottom_toTopOf="@id/selectDroneButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"
+        android:contentDescription="App Icon"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,11 +31,6 @@
             </intent-filter>
         </activity>
 
-        <!--
-               Set to true if your app is Standalone, that is, it does not require the handheld
-               app to run.
-        -->
-
         <activity android:name=".main_video" />
         <activity
             android:name=".DeviceListActivity"
@@ -60,7 +55,7 @@
             android:screenOrientation="landscape" />
         <activity
             android:name=".ReporterActivity"
-            android:screenOrientation="landscape" />/>
+            android:screenOrientation="landscape" />
 
         <service android:name=".WearService">
             <intent-filter>
