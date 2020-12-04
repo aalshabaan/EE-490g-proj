@@ -73,11 +73,12 @@ public class MainActivity extends AppCompatActivity {
 
         switch (view.getId()){
             case R.id.presenterModeButton:
-                Log.i(TAG, "engageDrone: Presenter Mode");
-                //TODO add PresenterModeActivity
-                //Intent i = new Intent(this, otherclass.class)
+                //Log.i(TAG, "engageDrone: Presenter Mode");
+                Intent intent = new Intent(this, ReporterActivity.class);
+                startActivity(intent);
                 break;
             case R.id.documenterModeButton:
+                // different Intent name because Android Studio considers all cases as the same scope
                 Intent i = new Intent(this, BebopActivity.class);
                 startActivity(i);
                 break;
@@ -128,8 +129,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
     private class MainActivityDroneListener implements BebopDrone.Listener{
+        @Override
+        public void onPositionChanged(double latitude, double longitude, double altitude) {
+
+        }
+
         @Override
         public void onDroneConnectionChanged(ARCONTROLLER_DEVICE_STATE_ENUM state) {
 
