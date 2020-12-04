@@ -75,7 +75,15 @@ public class DeviceListActivity extends AppCompatActivity {
                 switch (product) {
                     case ARDISCOVERY_PRODUCT_ARDRONE:
                     case ARDISCOVERY_PRODUCT_BEBOP_2:
-                        intent = new Intent(DeviceListActivity.this, BebopActivity.class);
+                        intent = new Intent();
+                        setResult(RESULT_OK);
+                        BebopDrone drone = new BebopDrone(getApplicationContext(), service);
+                        intent.putExtra(MainActivity.DRONE_OBJECT, drone);
+                        Toast.makeText(DeviceListActivity.this, "Connecting", Toast.LENGTH_SHORT).show();
+                        if(drone.connect()){
+                            Toast.makeText(DeviceListActivity.this, "Connection Successful", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
                         break;
 
                     case ARDISCOVERY_PRODUCT_SKYCONTROLLER:

@@ -123,7 +123,7 @@
         android:layout_alignParentRight="true"
         android:width="150dp"/>
 
-    <TextView
+    <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
@@ -132,7 +132,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:textColor="#ff0000" />
+        android:src="@drawable/ic_battery_red_24" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -143,7 +143,7 @@
         android:layout_alignParentTop="true"
         android:layout_toRightOf="@+id/textView"
         android:layout_toEndOf="@+id/textView"
-        android:textColor="#ff0000" />
+        android:textColor="@color/battery_red" />
 
     <TextView
         android:layout_width="110dp"

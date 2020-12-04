@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
     private BebopDrone mDrone = null;
     private TextView mBatteryTextView;
     private ImageView mBatteryImageView;
+    private Button mConnectDisconnectButton;
+    private boolean mConnected = false;
 
 
     @Override
@@ -39,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mBatteryImageView = findViewById(R.id.batteryIcon);
         mBatteryTextView = findViewById(R.id.batteryPercentage);
+        mConnectDisconnectButton = findViewById(R.id.selectDroneButton);
     }
 
     // Add and remove the listener following the activity's life cycle
@@ -87,8 +90,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void selectDrone(View view){
-        Intent i = new Intent(this, DeviceListActivity.class);
-        startActivityForResult(i, SELECT_DRONE);
+        if(!mConnected) {
+            Intent i = new Intent(this, DeviceListActivity.class);
+            startActivityForResult(i, SELECT_DRONE);
+        }
+        else{
+            if(mDrone != null){
+                if(mDrone.disconnect()){
+                    mConnected = false;
+                    mDrone.removeListener(mDroneListener);
+                    mDroneListener = null;
+                    mDrone = null;
+                    mConnectDisconnectButton.setText(getText(R.string.select_drone));
+                }
+            }
+        }
     }
 
     @Override
@@ -100,7 +116,10 @@ public class MainActivity extends AppCompatActivity {
                 mDroneListener = new MainActivityDroneListener();
             }
             mDrone.addListener(mDroneListener);
+            mConnectDisconnectButton.setText(getText(R.string.disconnect));
+            mConnected = true;
         }
+
     }
 
 
