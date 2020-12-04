@@ -56,6 +56,8 @@ public class BebopActivity extends AppCompatActivity {
         //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
         mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
+        mRollJoystick = findViewById(R.id.rollJoystick);
+        mYawJoystick = findViewById(R.id.yawJoystick);
 
     }
 
