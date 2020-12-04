@@ -19,6 +19,13 @@ import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 
+import io.github.controlwear.virtual.joystick.android.JoystickView;
+
+import static java.lang.Math.cos;
+import static java.lang.Math.round;
+import static java.lang.Math.sin;
+import static java.lang.Math.toDegrees;
+
 public class BebopActivity extends AppCompatActivity {
     private static final String TAG = "BebopActivity";
     private BebopDrone mBebopDrone;
@@ -31,6 +38,8 @@ public class BebopActivity extends AppCompatActivity {
     private TextView mBatteryLabel;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
+    private JoystickView mRollJoystick;
+    private JoystickView mYawJoystick;
 
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
@@ -38,7 +47,7 @@ public class BebopActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bebop);
+        setContentView(R.layout.activity_bebop_joystick);
 
         initIHM();
 
@@ -142,6 +151,45 @@ public class BebopActivity extends AppCompatActivity {
                 mDownloadProgressDialog.show();
             }
         });
+
+        mRollJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
+            @Override
+            public void onMove(int angle, int strength) {
+                byte x = (byte) round(strength * cos(toDegrees(angle)));
+                byte y = (byte) round(strength * sin(toDegrees(angle)));
+
+                if(x!=0 || y!=0){
+                    mBebopDrone.setRoll(x);
+                    mBebopDrone.setPitch(y);
+                    mBebopDrone.setFlag((byte) 1);
+                }
+                else{
+                    mBebopDrone.setPitch((byte) 0);
+                    mBebopDrone.setRoll((byte) 0);
+                    mBebopDrone.setFlag((byte) 0);
+                }
+            }
+        });
+
+
+        mYawJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
+            @Override
+            public void onMove(int angle, int strength) {
+                byte x = (byte) round(strength * cos(toDegrees(angle)));
+                byte y = (byte) round(strength * sin(toDegrees(angle)));
+
+                if(x!=0 || y!=0){
+                    mBebopDrone.setYaw(x);
+                    mBebopDrone.setGaz(y);
+                }
+                else{
+                    mBebopDrone.setYaw((byte) 0);
+                    mBebopDrone.setGaz((byte) 0);
+                }
+            }
+        });
+
+
 
         findViewById(R.id.gazUpBt).setOnTouchListener(new View.OnTouchListener() {
             @Override

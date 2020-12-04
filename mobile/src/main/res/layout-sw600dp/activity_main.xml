@@ -44,7 +44,6 @@
         android:id="@+id/documenterModeButton"
         android:layout_width="0dp"
         android:layout_height="0dp"
-
         android:onClick="engageDrone"
         android:text="@string/documenter_mode"
         app:layout_constraintEnd_toStartOf="@id/footageReviewButton"
