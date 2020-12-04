@@ -50,7 +50,7 @@ public class ReporterActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
-        mBebopDrone = new BebopDrone(this, service);
+        mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
         mBebopDrone.addListener(mBebopListener);
 
     }
