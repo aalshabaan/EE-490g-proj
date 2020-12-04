@@ -34,18 +34,24 @@ public class DeviceListActivity extends AppCompatActivity {
 
     private static final String TAG = "DeviceListActivity";
 
-    /** List of runtime permission we need. */
+    /**
+     * List of runtime permission we need.
+     */
     private static final String[] PERMISSIONS_NEEDED = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_COARSE_LOCATION,
     };
 
-    /** Code for permission request result handling. */
+    /**
+     * Code for permission request result handling.
+     */
     private static final int REQUEST_CODE_PERMISSIONS_REQUEST = 1;
 
     public DroneDiscoverer mDroneDiscoverer;
 
     private final List<ARDiscoveryDeviceService> mDronesList = new ArrayList<>();
+
+    private Intent mIntent = null;
 
     // this block loads the native libraries
     // it is mandatory
@@ -54,36 +60,34 @@ public class DeviceListActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list);
         final ListView listView = (ListView) findViewById(R.id.list);
 
         // Assign adapter to ListView
         listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener()
-        {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id)
-            {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // launch the activity related to the type of discovery device service
                 Intent intent = null;
 
-                ARDiscoveryDeviceService service = (ARDiscoveryDeviceService)mAdapter.getItem(position);
+                ARDiscoveryDeviceService service = (ARDiscoveryDeviceService) mAdapter.getItem(position);
                 ARDISCOVERY_PRODUCT_ENUM product = ARDiscoveryService.getProductFromProductID(service.getProductID());
                 switch (product) {
                     case ARDISCOVERY_PRODUCT_ARDRONE:
                     case ARDISCOVERY_PRODUCT_BEBOP_2:
                         intent = new Intent();
-                        setResult(RESULT_OK);
-                        BebopDrone drone = new BebopDrone(getApplicationContext(), service);
-                        intent.putExtra(MainActivity.DRONE_OBJECT, drone);
+                        //setResult(RESULT_OK);
+                        //BebopDrone drone = new BebopDrone(getApplicationContext(), service);
+                        //intent.putExtra(MainActivity.DRONE_OBJECT, drone);
                         Toast.makeText(DeviceListActivity.this, "Connecting", Toast.LENGTH_SHORT).show();
-                        if(drone.connect()){
+                        /*
+                        if (drone.connect()) {
                             Toast.makeText(DeviceListActivity.this, "Connection Successful", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
+                            //finish();
+                        }*/
                         break;
 
                     case ARDISCOVERY_PRODUCT_SKYCONTROLLER:
@@ -118,7 +122,9 @@ public class DeviceListActivity extends AppCompatActivity {
 
                 if (intent != null) {
                     intent.putExtra(EXTRA_DEVICE_SERVICE, service);
-                    startActivity(intent);
+                    //startActivity(intent);
+                    DeviceListActivity.this.setResult(MainActivity.RESULT_OK, intent);
+                    finish();
                 }
             }
         });
@@ -145,8 +151,7 @@ public class DeviceListActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
 
         // setup the drone discoverer and register as listener
@@ -158,8 +163,7 @@ public class DeviceListActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause()
-    {
+    protected void onPause() {
         super.onPause();
 
         // clean the drone discoverer object
@@ -191,7 +195,7 @@ public class DeviceListActivity extends AppCompatActivity {
         }
     }
 
-    private final DroneDiscoverer.Listener mDiscovererListener = new  DroneDiscoverer.Listener() {
+    private final DroneDiscoverer.Listener mDiscovererListener = new DroneDiscoverer.Listener() {
 
         @Override
         public void onDronesListUpdated(List<ARDiscoveryDeviceService> dronesList) {
@@ -206,29 +210,24 @@ public class DeviceListActivity extends AppCompatActivity {
         public TextView text;
     }
 
-    private final BaseAdapter mAdapter = new BaseAdapter()
-    {
+    private final BaseAdapter mAdapter = new BaseAdapter() {
         @Override
-        public int getCount()
-        {
+        public int getCount() {
             return mDronesList.size();
         }
 
         @Override
-        public Object getItem(int position)
-        {
+        public Object getItem(int position) {
             return mDronesList.get(position);
         }
 
         @Override
-        public long getItemId(int position)
-        {
+        public long getItemId(int position) {
             return 0;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
+        public View getView(int position, View convertView, ViewGroup parent) {
             View rowView = convertView;
             // reuse views
             if (rowView == null) {
@@ -242,7 +241,7 @@ public class DeviceListActivity extends AppCompatActivity {
 
             // fill data
             ViewHolder holder = (ViewHolder) rowView.getTag();
-            ARDiscoveryDeviceService service = (ARDiscoveryDeviceService)getItem(position);
+            ARDiscoveryDeviceService service = (ARDiscoveryDeviceService) getItem(position);
             holder.text.setText(service.getName() + " on " + service.getNetworkType());
 
             return rowView;

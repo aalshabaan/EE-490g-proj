@@ -1,19 +1,15 @@
 package ch.epfl.esl.dronereporter;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM;
@@ -21,18 +17,21 @@ import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATE
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DEVICE_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
+import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 
 
 public class MainActivity extends AppCompatActivity {
 
 
     public static final String DRONE_OBJECT = "drone";
+    public static final String EXTRA_DEVICE_SERVICE = "EXTRA_DEVICE_SERVICE";
 
     private static final int SELECT_DRONE = 42;
     private static final String TAG = "MainActivity";
 
     private MainActivityDroneListener mDroneListener;
     private BebopDrone mDrone = null;
+    private ARDiscoveryDeviceService mServiceDrone = null;
     private TextView mBatteryTextView;
     private ImageView mBatteryImageView;
     private Button mConnectDisconnectButton;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void engageDrone(View view){
-        if(mDrone == null){
+        if(mServiceDrone == null){
             Toast.makeText(this, "No drone found, connect first!", Toast.LENGTH_LONG).show();
             return;
         }
@@ -83,11 +82,13 @@ public class MainActivity extends AppCompatActivity {
             case R.id.presenterModeButton:
                 //Log.i(TAG, "engageDrone: Presenter Mode");
                 Intent intent = new Intent(this, ReporterActivity.class);
+                intent.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
                 startActivity(intent);
                 break;
             case R.id.documenterModeButton:
                 // different Intent name because Android Studio considers all cases as the same scope
                 Intent i = new Intent(this, BebopActivity.class);
+                i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
                 startActivity(i);
                 break;
             default:
@@ -106,14 +107,16 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(i, SELECT_DRONE);
         }
         else{
-            if(mDrone != null){
-                if(mDrone.disconnect()){
+            //if(mDrone != null){
+            if(mServiceDrone != null){
+                //if(mDrone.disconnect()){
                     mConnected = false;
-                    mDrone.removeListener(mDroneListener);
+                    //mDrone.removeListener(mDroneListener);
                     mDroneListener = null;
                     mDrone = null;
                     mConnectDisconnectButton.setText(getText(R.string.select_drone));
-                }
+                    mServiceDrone = null;
+                //}
             }
         }
     }
@@ -122,13 +125,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == SELECT_DRONE && resultCode == RESULT_OK){
+            /*
             mDrone = (BebopDrone) data.getSerializableExtra(DRONE_OBJECT);
             if (mDroneListener == null){
                 mDroneListener = new MainActivityDroneListener();
             }
             mDrone.addListener(mDroneListener);
+
+             */
+
+            mServiceDrone = data.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
             mConnectDisconnectButton.setText(getText(R.string.disconnect));
             mConnected = true;
+            //Toast.makeText(MainActivity.this, "Activity result", Toast.LENGTH_SHORT).show();
+
         }
 
     }
