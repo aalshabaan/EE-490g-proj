@@ -32,10 +32,11 @@ import com.parrot.arsdk.arutils.ARUTILS_FTP_TYPE_ENUM;
 import com.parrot.arsdk.arutils.ARUtilsException;
 import com.parrot.arsdk.arutils.ARUtilsManager;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BebopDrone {
+public class BebopDrone implements Serializable {
     private static final String TAG = "BebopDrone";
 
     public interface Listener {

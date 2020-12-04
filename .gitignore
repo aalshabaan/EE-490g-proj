@@ -16,5 +16,6 @@ gradlew
 .externalNativeBuild
 .cxx
 gradle.properties
+gradlew.bat
 settings.gradle
 .gitignore
