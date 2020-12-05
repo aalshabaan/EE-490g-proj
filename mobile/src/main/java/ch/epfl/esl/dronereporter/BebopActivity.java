@@ -24,7 +24,7 @@ import io.github.controlwear.virtual.joystick.android.JoystickView;
 import static java.lang.Math.cos;
 import static java.lang.Math.round;
 import static java.lang.Math.sin;
-import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
 
 public class BebopActivity extends AppCompatActivity {
     private static final String TAG = "BebopActivity";
@@ -158,8 +158,8 @@ public class BebopActivity extends AppCompatActivity {
         mRollJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
             @Override
             public void onMove(int angle, int strength) {
-                byte x = (byte) round(strength * cos(toDegrees(angle)));
-                byte y = (byte) round(strength * sin(toDegrees(angle)));
+                byte x = (byte) round(strength * cos(toRadians(angle)));
+                byte y = (byte) round(strength * sin(toRadians(angle)));
 
                 if(x!=0 || y!=0){
                     mBebopDrone.setRoll(x);
@@ -178,8 +178,8 @@ public class BebopActivity extends AppCompatActivity {
         mYawJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
             @Override
             public void onMove(int angle, int strength) {
-                byte x = (byte) round(strength * cos(toDegrees(angle)));
-                byte y = (byte) round(strength * sin(toDegrees(angle)));
+                byte x = (byte) round(strength * cos(toRadians(angle)));
+                byte y = (byte) round(strength * sin(toRadians(angle)));
 
                 if(x!=0 || y!=0){
                     mBebopDrone.setYaw(x);
