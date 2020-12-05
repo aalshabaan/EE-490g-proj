@@ -3,6 +3,7 @@ package ch.epfl.esl.dronereporter;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -70,6 +71,15 @@ public class MainActivity extends AppCompatActivity {
                 mDroneListener = new MainActivityDroneListener();
             mDrone.addListener(mDroneListener);
         }
+    }
+
+
+    public void startPositionOnWear(View view) {
+        Log.d(TAG, "connecting to the watch");
+        Intent intentStartRec = new Intent(MainActivity.this, WearService.class);
+        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
+        startService(intentStartRec);
     }
 
     public void engageDrone(View view){

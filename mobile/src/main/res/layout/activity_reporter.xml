@@ -39,14 +39,16 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="" />
+            android:text=""
+            android:textColor="#F44336" />
 
         <TextView
             android:id="@+id/longitudeDrone"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="" />
+            android:text=""
+            android:textColor="#F44336"/>
 
         <TextView
             android:id="@+id/latitudeLabel"
@@ -60,13 +62,15 @@
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="" />
+            android:text=""
+            android:textColor="#F44336"/>
         <TextView
             android:id="@+id/latitudeDrone"
             android:layout_width="wrap_content"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:text="" />
+            android:text=""
+            android:textColor="#F44336"/>
 
     </LinearLayout>
 

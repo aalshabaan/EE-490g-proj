@@ -1,6 +1,7 @@
 package ch.epfl.esl.dronereporter;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -72,12 +73,12 @@ public class WearReporterActivity extends WearableActivity {
                 TextView textViewLocation = findViewById(R.id.Location);
                 for (Location location : locationResult.getLocations()) {
                     textViewLocation.setText(String.format("Lat: %s \nLong: %s", location.getLatitude(), location.getLongitude()));
-/*
+
                     Intent intent = new Intent(WearReporterActivity.this, WearService.class);
                     intent.setAction(WearService.ACTION_SEND.LOCATION.name());
                     intent.putExtra(WearService.LONGITUDE, location.getLongitude());
                     intent.putExtra(WearService.LATITUDE, location.getLatitude());
-                    startService(intent);*/
+                    startService(intent);
                 }
             }
         };

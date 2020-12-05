@@ -1,8 +1,11 @@
 package ch.epfl.esl.dronereporter;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -11,6 +14,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
@@ -25,6 +29,7 @@ public class ReporterActivity extends AppCompatActivity {
     public static final String LONGITUDE = "LONGITUDE";
     public static final String LATITUDE = "LATITUDE";
 
+    private final double LATLNG_METERS = 111139;
     private BebopDrone mBebopDrone;
 
     private ProgressDialog mConnectionProgressDialog;
@@ -40,11 +45,23 @@ public class ReporterActivity extends AppCompatActivity {
 
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
+    private double userLatitude;
+    private double userLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reporter);
+
+        // Register for updates of the position of the watch
+        LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle b = getIntent().getExtras();
+                userLatitude = b.getDouble(LATITUDE);
+                userLongitude = b.getDouble((LONGITUDE));
+            }
+        }, new IntentFilter((RECEIVED_LOCATION)));
 
         initIHM();
 
@@ -99,6 +116,7 @@ public class ReporterActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    // Starts the ReporterActivity of the watch
     public void startPositionOnWear(View view) {
         Log.d(TAG, "connecting to the watch");
         Intent intentStartRec = new Intent(ReporterActivity.this, WearService.class);
@@ -107,8 +125,15 @@ public class ReporterActivity extends AppCompatActivity {
         startService(intentStartRec);
     }
 
+    // Converts a difference of latitude and longitude into meters
+    private double convertLatLngToMeters(double lat1, double lng1, double lat2, double lng2){
+        double deltaMlat = LATLNG_METERS*(lat1 - lat2);
+        double delatMlng = LATLNG_METERS*(lng1 - lng2);
+        return Math.sqrt(Math.pow(deltaMlat,2) + Math.pow(delatMlng,2);
+    }
 
-        private void initIHM() {
+
+    private void initIHM() {
         mVideoView = (H264VideoView) findViewById(R.id.videoView);
 
         findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
@@ -369,9 +394,11 @@ public class ReporterActivity extends AppCompatActivity {
 
         @Override
         public void onPositionChanged(double latitude, double longitude, double altitude) {
-            //mLatitudeText.setText(String.format("%f", latitude));
-            //mLongitudeText.setText(String.format("%f", longitude));
+            mLatitudeText.setText(String.format("%f", latitude));
+            mLongitudeText.setText(String.format("%f", longitude));
             Log.d(TAG, String.valueOf(latitude));
+            Log.d(TAG, String.valueOf(longitude));
+            Log.d(TAG, String.valueOf(altitude));
             Log.d(TAG, "Thread position " + Thread.currentThread().getId());
 
         }
@@ -398,7 +425,7 @@ public class ReporterActivity extends AppCompatActivity {
         @Override
         public void onBatteryChargeChanged(int batteryPercentage) {
             mBatteryLabel.setText(String.format("%d%%", batteryPercentage));
-            mLatitudeText.setText(String.format("%d%%", batteryPercentage));
+
             Log.d(TAG, " Thread battery" + Thread.currentThread().getId());
         }
 

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
     <TextView
         android:id="@+id/batteryPercentage"
         android:layout_width="wrap_content"
@@ -80,6 +81,16 @@
         app:layout_constraintStart_toStartOf="parent"
         android:onClick="selectDrone"
         app:layout_constraintTop_toBottomOf="@id/documenterModeButton"/>
+
+    <Button
+        android:id="@+id/button_localisation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="startPositionOnWear"
+        android:text="watch"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/mainIconImageView"
