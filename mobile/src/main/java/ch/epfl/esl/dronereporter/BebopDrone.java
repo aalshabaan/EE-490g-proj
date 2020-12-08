@@ -36,6 +36,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_ENUM.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_TO_TARGET;
+
 public class BebopDrone implements Serializable {
     private static final String TAG = "BebopDrone";
 
@@ -265,6 +267,18 @@ public class BebopDrone implements Serializable {
         }
     }
 
+
+    /**
+     * Move the drone to the position
+     * @param latitude value in degree
+     */
+    public void goToGPSLocation(double latitude, double longitude, double altitude){
+        if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
+            mDeviceController.getFeatureARDrone3().sendPilotingMoveTo(latitude, longitude, altitude, ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_TO_TARGET, 0f);
+        }
+
+    }
+
     /**
      * Set the forward/backward angle of the drone
      * Note that {@link BebopDrone#setFlag(byte)} should be set to 1 in order to take in account the pitch value
@@ -274,6 +288,7 @@ public class BebopDrone implements Serializable {
         if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
             mDeviceController.getFeatureARDrone3().setPilotingPCMDPitch(pitch);
         }
+
     }
 
     /**
@@ -500,8 +515,10 @@ public class BebopDrone implements Serializable {
                 }
             }
 
-            /*
+
+
             // if the attitude of the drone changed
+            /*
             if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_PILOTINGSTATE_ATTITUDECHANGED) && (elementDictionary != null)){
                 ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
                 if (args != null) {
@@ -516,7 +533,7 @@ public class BebopDrone implements Serializable {
                     });
                 }
             }
-            */
+             */
 
             // if event received is the battery update
             if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED) && (elementDictionary != null)) {

@@ -19,13 +19,6 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true">
 
-        <Button
-            android:id="@+id/button_localisation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="watch"
-            android:onClick="startPositionOnWear" />
-
 
         <TextView
             android:id="@+id/longitudeLabel"
@@ -71,6 +64,29 @@
             android:layout_weight="1"
             android:text=""
             android:textColor="#F44336"/>
+
+        <TextView
+            android:id="@+id/altitudeLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text="@string/latitude" />
+
+        <TextView
+            android:id="@+id/altitudeWatch"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="#F44336"/>
+        <TextView
+            android:id="@+id/altitudeDrone"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:text=""
+            android:textColor="#F44336"/>
+
 
     </LinearLayout>
 

@@ -40,6 +40,9 @@ public class ReporterActivity extends AppCompatActivity {
     private TextView mBatteryLabel;
     private TextView mLatitudeText;
     private TextView mLongitudeText;
+    private TextView mAltitudeText;
+    private TextView mLongitudeUser;
+    private TextView mLatitudeUser;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
 
@@ -57,9 +60,14 @@ public class ReporterActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Bundle b = getIntent().getExtras();
-                userLatitude = b.getDouble(LATITUDE);
-                userLongitude = b.getDouble((LONGITUDE));
+                //Log.d(TAG, "watch position");
+                //Bundle b = getIntent().getExtras();
+                double latitude = intent.getDoubleExtra(LATITUDE,-1);
+                double longitude = intent.getDoubleExtra(LONGITUDE,-1);
+                Log.d(TAG, "watch position" + latitude);
+                mLatitudeUser.setText(String.format("%f", latitude));
+                mLongitudeUser.setText(String.format("%f", longitude));
+
             }
         }, new IntentFilter((RECEIVED_LOCATION)));
 
@@ -70,7 +78,7 @@ public class ReporterActivity extends AppCompatActivity {
         //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
         mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
-
+        startPositionOnWear();
     }
 
     @Override
@@ -117,7 +125,7 @@ public class ReporterActivity extends AppCompatActivity {
     }
 
     // Starts the ReporterActivity of the watch
-    public void startPositionOnWear(View view) {
+    public void startPositionOnWear() {
         Log.d(TAG, "connecting to the watch");
         Intent intentStartRec = new Intent(ReporterActivity.this, WearService.class);
         intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
@@ -129,7 +137,7 @@ public class ReporterActivity extends AppCompatActivity {
     private double convertLatLngToMeters(double lat1, double lng1, double lat2, double lng2){
         double deltaMlat = LATLNG_METERS*(lat1 - lat2);
         double delatMlng = LATLNG_METERS*(lng1 - lng2);
-        return Math.sqrt(Math.pow(deltaMlat,2) + Math.pow(delatMlng,2);
+        return Math.sqrt(Math.pow(deltaMlat,2) + Math.pow(delatMlng,2));
     }
 
 
@@ -386,6 +394,9 @@ public class ReporterActivity extends AppCompatActivity {
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
         mLatitudeText = findViewById(R.id.latitudeDrone);
         mLongitudeText = findViewById(R.id.longitudeDrone);
+        mAltitudeText = findViewById(R.id.altitudeDrone);
+        mLatitudeUser = findViewById(R.id.latitudeWatch);
+        mLongitudeUser = findViewById(R.id.longitudeWatch);
 
     }
 
@@ -396,10 +407,14 @@ public class ReporterActivity extends AppCompatActivity {
         public void onPositionChanged(double latitude, double longitude, double altitude) {
             mLatitudeText.setText(String.format("%f", latitude));
             mLongitudeText.setText(String.format("%f", longitude));
+            mAltitudeText.setText(String.format("%f", altitude));
+            /*
             Log.d(TAG, String.valueOf(latitude));
             Log.d(TAG, String.valueOf(longitude));
             Log.d(TAG, String.valueOf(altitude));
             Log.d(TAG, "Thread position " + Thread.currentThread().getId());
+            */
+
 
         }
 

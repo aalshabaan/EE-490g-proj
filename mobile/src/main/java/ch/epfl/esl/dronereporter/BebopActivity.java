@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -49,7 +48,7 @@ public class BebopActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bebop_joystick);
 
-        initIHM();
+
 
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
@@ -58,6 +57,7 @@ public class BebopActivity extends AppCompatActivity {
         mBebopDrone.addListener(mBebopListener);
         mRollJoystick = findViewById(R.id.rollJoystick);
         mYawJoystick = findViewById(R.id.yawJoystick);
+        initIHM();
 
     }
 
@@ -192,8 +192,7 @@ public class BebopActivity extends AppCompatActivity {
             }
         });
 
-
-
+        /*
         findViewById(R.id.gazUpBt).setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -385,7 +384,7 @@ public class BebopActivity extends AppCompatActivity {
                 return true;
             }
         });
-
+        */
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
     }
 
