@@ -158,8 +158,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     private class MainActivityDroneListener implements BebopDrone.Listener{
+
         @Override
         public void onPositionChanged(double latitude, double longitude, double altitude) {
+
+        }
+
+        @Override
+        public void onGpsStatusChanged(byte fixed) {
 
         }
 

@@ -36,7 +36,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_ENUM.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_TO_TARGET;
+import static com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_ENUM.ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_HEADING_START;
+import static com.parrot.arsdk.arcontroller.ARCONTROLLER_ERROR_ENUM.eARCONTROLLER_ERROR_UNKNOWN_ENUM_VALUE;
 
 public class BebopDrone implements Serializable {
     private static final String TAG = "BebopDrone";
@@ -50,6 +51,8 @@ public class BebopDrone implements Serializable {
          * @param altitude altitude of the drone
          */
         void onPositionChanged(double latitude, double longitude, double altitude);
+
+        void onGpsStatusChanged(byte fixed);
 
         /**
          * Called when the connection to the drone changes
@@ -272,11 +275,18 @@ public class BebopDrone implements Serializable {
      * Move the drone to the position
      * @param latitude value in degree
      */
-    public void goToGPSLocation(double latitude, double longitude, double altitude){
+    public ARCONTROLLER_ERROR_ENUM goToGPSLocation(double latitude, double longitude, double altitude, float heading){
+        ARCONTROLLER_ERROR_ENUM result = eARCONTROLLER_ERROR_UNKNOWN_ENUM_VALUE;
         if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
-            mDeviceController.getFeatureARDrone3().sendPilotingMoveTo(latitude, longitude, altitude, ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_TO_TARGET, 0f);
+            result = mDeviceController.getFeatureARDrone3().sendPilotingMoveTo(latitude, longitude, altitude, ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_HEADING_START, 0f);
         }
+        return  result;
+    }
 
+    public void cancelGoTo(){
+        if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
+            mDeviceController.getFeatureARDrone3().sendPilotingCancelMoveTo();
+        }
     }
 
     /**
@@ -374,6 +384,13 @@ public class BebopDrone implements Serializable {
         List<Listener> listenersCpy = new ArrayList<>(mListeners);
         for (Listener listener : listenersCpy) {
             listener.onPositionChanged(latitude, longitude, altitude);
+        }
+    }
+
+    private void notifyGpsStatusChanged(byte fixed) {
+        List<Listener> listenersCpy = new ArrayList<>(mListeners);
+        for (Listener listener : listenersCpy) {
+            listener.onGpsStatusChanged(fixed);
         }
     }
 
@@ -534,6 +551,20 @@ public class BebopDrone implements Serializable {
                 }
             }
              */
+
+            // if the GPS status changed
+            if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSFIXSTATECHANGED) && (elementDictionary != null)){
+                ARControllerArgumentDictionary<Object> args = elementDictionary.get(ARControllerDictionary.ARCONTROLLER_DICTIONARY_SINGLE_KEY);
+                if (args != null) {
+                    final byte fixed = (byte)((Integer)args.get(ARFeatureARDrone3.ARCONTROLLER_DICTIONARY_KEY_ARDRONE3_GPSSETTINGSSTATE_GPSFIXSTATECHANGED_FIXED)).intValue();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            notifyGpsStatusChanged(fixed);
+                        }
+                    });
+                }
+            }
 
             // if event received is the battery update
             if ((commandKey == ARCONTROLLER_DICTIONARY_KEY_ENUM.ARCONTROLLER_DICTIONARY_KEY_COMMON_COMMONSTATE_BATTERYSTATECHANGED) && (elementDictionary != null)) {

@@ -19,6 +19,19 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true">
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Move"
+            android:id="@+id/moveToBt"
+            android:onClick="moveTo"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            android:id="@+id/cancelBt"
+            android:onClick="cancelMoveTo"/>
 
         <TextView
             android:id="@+id/longitudeLabel"
@@ -91,15 +104,14 @@
     </LinearLayout>
 
 
-
     <Button
+        android:id="@+id/emergencyBt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Emergency"
-        android:id="@+id/emergencyBt"
         android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:width="150dp"/>
+        android:layout_marginTop="32dp"
+        android:width="150dp"
+        android:text="Emergency" />
 
     <Button
         android:layout_width="wrap_content"

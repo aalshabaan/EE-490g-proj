@@ -397,6 +397,11 @@ public class BebopActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onGpsStatusChanged(byte fixed) {
+
+        }
+
+        @Override
         public void onDroneConnectionChanged(ARCONTROLLER_DEVICE_STATE_ENUM state) {
             switch (state)
             {

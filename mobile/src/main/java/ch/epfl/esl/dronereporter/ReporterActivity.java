@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -19,6 +20,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DEVICE_STATE_ENUM;
+import com.parrot.arsdk.arcontroller.ARCONTROLLER_ERROR_ENUM;
 import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
@@ -45,11 +47,19 @@ public class ReporterActivity extends AppCompatActivity {
     private TextView mLatitudeUser;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
+    private Button mMoveTo;
+    private byte GpsStatus;
+    private double latitudeDrone;
+    private double longitudeDrone;
+    private double altitudeDrone;
+    private double latitudeUser;
+    private double longitudeUser;
+    private boolean moveBool = false;
+
 
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
-    private double userLatitude;
-    private double userLongitude;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +72,20 @@ public class ReporterActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 //Log.d(TAG, "watch position");
                 //Bundle b = getIntent().getExtras();
-                double latitude = intent.getDoubleExtra(LATITUDE,-1);
-                double longitude = intent.getDoubleExtra(LONGITUDE,-1);
-                Log.d(TAG, "watch position" + latitude);
-                mLatitudeUser.setText(String.format("%f", latitude));
-                mLongitudeUser.setText(String.format("%f", longitude));
+                double prevLat = latitudeUser;
+                double prevLong = longitudeUser;
+                latitudeUser = intent.getDoubleExtra(LATITUDE,-1);
+                longitudeUser = intent.getDoubleExtra(LONGITUDE,-1);
+                Log.d(TAG, "watch position" + latitudeUser);
+                mLatitudeUser.setText(String.format("%f", latitudeUser));
+                mLongitudeUser.setText(String.format("%f", longitudeUser));
+                double delta = Math.pow(latitudeUser-prevLat,2) + Math.pow(longitudeUser - prevLong,2);
+                double threshold = 0.5/LATLNG_METERS; // in degree
+
+                if (GpsStatus == 1 && latitudeUser != -1 && longitudeUser != -1 && moveBool &&
+                delta > Math.pow(threshold,2)){
+                    moveTo();
+                }
 
             }
         }, new IntentFilter((RECEIVED_LOCATION)));
@@ -131,13 +150,6 @@ public class ReporterActivity extends AppCompatActivity {
         intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
         intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
         startService(intentStartRec);
-    }
-
-    // Converts a difference of latitude and longitude into meters
-    private double convertLatLngToMeters(double lat1, double lng1, double lat2, double lng2){
-        double deltaMlat = LATLNG_METERS*(lat1 - lat2);
-        double delatMlng = LATLNG_METERS*(lng1 - lng2);
-        return Math.sqrt(Math.pow(deltaMlat,2) + Math.pow(delatMlng,2));
     }
 
 
@@ -397,7 +409,39 @@ public class ReporterActivity extends AppCompatActivity {
         mAltitudeText = findViewById(R.id.altitudeDrone);
         mLatitudeUser = findViewById(R.id.latitudeWatch);
         mLongitudeUser = findViewById(R.id.longitudeWatch);
+        mMoveTo = findViewById(R.id.moveToBt);
 
+    }
+
+    // with the button
+    public void moveTo(View view){
+        moveBool = true;
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double rayon = 1;
+        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(ReporterActivity.this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void moveTo(){
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double rayon = 1;
+        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(ReporterActivity.this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void cancelMoveTo(View view){
+        moveBool = false;
+        mBebopDrone.cancelGoTo();
     }
 
     private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
@@ -408,6 +452,9 @@ public class ReporterActivity extends AppCompatActivity {
             mLatitudeText.setText(String.format("%f", latitude));
             mLongitudeText.setText(String.format("%f", longitude));
             mAltitudeText.setText(String.format("%f", altitude));
+            latitudeDrone= latitude;
+            longitudeDrone = longitude;
+            altitudeDrone = altitude;
             /*
             Log.d(TAG, String.valueOf(latitude));
             Log.d(TAG, String.valueOf(longitude));
@@ -416,6 +463,15 @@ public class ReporterActivity extends AppCompatActivity {
             */
 
 
+        }
+
+        @Override
+        public void onGpsStatusChanged(byte fixed) {
+            GpsStatus = fixed;
+            if (fixed == 1)
+                mMoveTo.setEnabled(true);
+            else
+                mMoveTo.setEnabled(false);
         }
 
         @Override
