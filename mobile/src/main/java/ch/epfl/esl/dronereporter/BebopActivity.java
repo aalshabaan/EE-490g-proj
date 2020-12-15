@@ -1,19 +1,26 @@
 package ch.epfl.esl.dronereporter;
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM;
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM;
 import com.parrot.arsdk.arcontroller.ARCONTROLLER_DEVICE_STATE_ENUM;
+import com.parrot.arsdk.arcontroller.ARCONTROLLER_ERROR_ENUM;
 import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
@@ -27,6 +34,14 @@ import static java.lang.Math.toRadians;
 
 public class BebopActivity extends AppCompatActivity {
     private static final String TAG = "BebopActivity";
+    public static final String RECEIVED_LOCATION = "RECEIVE_LOCATION";
+    public static final String LONGITUDE = "LONGITUDE";
+    public static final String LATITUDE = "LATITUDE";
+
+
+    private static final double LATLNG_METERS = 111139;
+    private static final boolean MANUAL_MODE = true;
+    private static final boolean AUTO_PILOT = false;
     private BebopDrone mBebopDrone;
 
     private ProgressDialog mConnectionProgressDialog;
@@ -39,6 +54,18 @@ public class BebopActivity extends AppCompatActivity {
     private Button mDownloadBt;
     private JoystickView mRollJoystick;
     private JoystickView mYawJoystick;
+    private Button mMoveTo;
+    private Switch mModeSwitch;
+    private BroadcastReceiver mWearBroadcastReceiver;
+
+    private byte GpsStatus;
+    private double latitudeDrone;
+    private double longitudeDrone;
+    private double altitudeDrone;
+    private double latitudeUser;
+    private double longitudeUser;
+    private boolean moveBool = false;
+
 
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
@@ -48,7 +75,28 @@ public class BebopActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bebop_joystick);
 
+       mWearBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d(TAG, "watch position");
+                //Bundle b = getIntent().getExtras();
+                double prevLat = latitudeUser;
+                double prevLong = longitudeUser;
+                latitudeUser = intent.getDoubleExtra(LATITUDE,-1);
+                longitudeUser = intent.getDoubleExtra(LONGITUDE,-1);
+                Log.d(TAG, "watch position" + latitudeUser);
+                //mLatitudeUser.setText(String.format("%f", latitudeUser));
+                //mLongitudeUser.setText(String.format("%f", longitudeUser));
+                double delta = Math.pow(latitudeUser-prevLat,2) + Math.pow(longitudeUser - prevLong,2);
+                double threshold = 0.5/LATLNG_METERS; // in degree
 
+                if (GpsStatus == 1 && latitudeUser != -1 && longitudeUser != -1 && moveBool &&
+                        delta > Math.pow(threshold,2)){
+                    moveTo();
+                }
+
+            }
+        };
 
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
@@ -57,7 +105,12 @@ public class BebopActivity extends AppCompatActivity {
         mBebopDrone.addListener(mBebopListener);
         mRollJoystick = findViewById(R.id.rollJoystick);
         mYawJoystick = findViewById(R.id.yawJoystick);
+        mModeSwitch = findViewById(R.id.mode_selection_switch);
+        mModeSwitch.setChecked(AUTO_PILOT);
         initIHM();
+        // manually call the callback to correctly engage the default mode
+        switchMode(mModeSwitch);
+        startPositionOnWear();
 
     }
 
@@ -79,6 +132,7 @@ public class BebopActivity extends AppCompatActivity {
                 finish();
             }
         }
+
     }
 
     @Override
@@ -104,8 +158,25 @@ public class BebopActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    // Starts the ReporterActivity of the watch
+    public void startPositionOnWear() {
+        Log.d(TAG, "connecting to the watch");
+        Intent intentStartRec = new Intent(this, WearService.class);
+        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
+        startService(intentStartRec);
+    }
+
+
     private void initIHM() {
         mVideoView = (H264VideoView) findViewById(R.id.videoView);
+
+        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.emergency();
+            }
+        });
+
 
         findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -192,213 +263,83 @@ public class BebopActivity extends AppCompatActivity {
             }
         });
 
-        /*
-        findViewById(R.id.gazUpBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setGaz((byte) 50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setGaz((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.gazDownBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setGaz((byte) -50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setGaz((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.yawLeftBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setYaw((byte) -50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setYaw((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.yawRightBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setYaw((byte) 50);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setYaw((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.forwardBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setPitch((byte) 50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setPitch((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.backBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setPitch((byte) -50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setPitch((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.rollLeftBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setRoll((byte) -50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setRoll((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-
-        findViewById(R.id.rollRightBt).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        v.setPressed(true);
-                        mBebopDrone.setRoll((byte) 50);
-                        mBebopDrone.setFlag((byte) 1);
-                        break;
-
-                    case MotionEvent.ACTION_UP:
-                        v.setPressed(false);
-                        mBebopDrone.setRoll((byte) 0);
-                        mBebopDrone.setFlag((byte) 0);
-                        break;
-
-                    default:
-
-                        break;
-                }
-
-                return true;
-            }
-        });
-        */
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
+        mMoveTo = findViewById(R.id.moveToBt);
     }
+
+    public void moveTo(View view){
+        moveBool = true;
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double rayon = 1;
+        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void moveTo(){
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double rayon = 1;
+        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void cancelMoveTo(View view){
+        moveBool = false;
+        mBebopDrone.cancelGoTo();
+    }
+
+    public void switchMode(View view){
+        if(((Switch)view).isChecked() == AUTO_PILOT){
+            mModeSwitch.setThumbResource(R.drawable.ic_auto_24);
+            LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
+
+            //TODO Switch fragments
+        }
+        else{
+            mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mWearBroadcastReceiver);
+            //TODO Switch fragments
+        }
+    }
+
 
     private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
 
 
         @Override
         public void onPositionChanged(double latitude, double longitude, double altitude) {
+            /*mLatitudeText.setText(String.format("%f", latitude));
+            mLongitudeText.setText(String.format("%f", longitude));
+            mAltitudeText.setText(String.format("%f", altitude));*/
+            latitudeDrone= latitude;
+            longitudeDrone = longitude;
+            altitudeDrone = altitude;
+            /*
+            Log.d(TAG, String.valueOf(latitude));
+            Log.d(TAG, String.valueOf(longitude));
+            Log.d(TAG, String.valueOf(altitude));
+            Log.d(TAG, "Thread position " + Thread.currentThread().getId());
+            */
+
 
         }
 
         @Override
         public void onGpsStatusChanged(byte fixed) {
-
+            GpsStatus = fixed;
+            if (fixed == 1)
+                mMoveTo.setEnabled(true);
+            else
+                mMoveTo.setEnabled(false);
         }
 
         @Override
@@ -423,6 +364,8 @@ public class BebopActivity extends AppCompatActivity {
         @Override
         public void onBatteryChargeChanged(int batteryPercentage) {
             mBatteryLabel.setText(String.format("%d%%", batteryPercentage));
+
+            Log.d(TAG, " Thread battery" + Thread.currentThread().getId());
         }
 
         @Override
