@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
 
     android:orientation="vertical"
-    tools:context="ch.epfl.esl.dronereporter.main_video">
+    tools:context="ch.epfl.esl.dronereporter.MainVideo">
 
 
     <VideoView
@@ -15,7 +15,7 @@
         android:layout_height="340dp"
 
         android:backgroundTint="@android:color/black" />
-    
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -24,19 +24,18 @@
         android:textSize="20sp"
         android:id="@+id/et_video_name"
         android:layout_margin="10dp"
-        android:backgroundTint="@color/colorPrimary"
         android:textColor="@android:color/black"
         android:autoText="true"
         />
-    
- <Button
-     android:layout_width="wrap_content"
-     android:layout_height="wrap_content"
-     android:text="Choose Video"
-     android:layout_gravity="center"
-     android:onClick="choose_video"
-     android:layout_marginTop="20dp"
-     />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose Video"
+        android:layout_gravity="center"
+        android:onClick="choose_video"
+        android:layout_marginTop="20dp"
+        />
 
     <Button
         android:layout_width="wrap_content"
@@ -45,7 +44,18 @@
         android:layout_gravity="center"
         android:onClick="show_video"
         android:layout_marginTop="20dp"
+        android:id="@+id/ButtonGoToVideo"
         />
+
+    <Button
+        android:id="@+id/testing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:onClick="pull_video"
+        android:text="Testing" />
+
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -55,5 +65,5 @@
         android:layout_margin="30dp"
 
         />
-    
+
 </LinearLayout>
