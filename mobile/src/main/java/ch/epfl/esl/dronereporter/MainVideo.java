@@ -73,7 +73,7 @@ public class MainVideo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_video);
-         Log.i(TAG, "I am creating the activity");
+        Log.i(TAG, "I am creating the activity");
 
         memberVideo = new MemberVideo();
 
@@ -91,18 +91,16 @@ public class MainVideo extends AppCompatActivity {
         videoView.setMediaController(mediaController);
         videoView.start();
 
-/*
+
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
-
-             perform your actions here
 
 
         } else {
             signInAnonymously();
         }
-*/
+
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -115,12 +113,11 @@ public class MainVideo extends AppCompatActivity {
 
     }
 
-/*
+
     private void signInAnonymously() {
         mAuth.signInAnonymously().addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
             @Override
             public void onSuccess(AuthResult authResult) {
-                 perform your actions here
 
             }
         })
@@ -131,7 +128,7 @@ public class MainVideo extends AppCompatActivity {
                     }
                 });
     }
-*/
+
 
 
     @Override
@@ -187,8 +184,8 @@ public class MainVideo extends AppCompatActivity {
 
         }
         catch (Exception e) {
-             e.printStackTrace();
-             Log.i(TAG, "copy NOT successful");
+            e.printStackTrace();
+            Log.i(TAG, "copy NOT successful");
         }
     }
 
@@ -250,16 +247,16 @@ public class MainVideo extends AppCompatActivity {
     }
 
     private void requestStoragePermission(){
-      //  if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
+        //  if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
 
            /* new AlertDialog.Builder(this),setTitle("permission needed").setMessage(
                     ""
             )*/
         //}
 
-           // else
+        // else
         //{
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},STORAGE_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},STORAGE_PERMISSION_CODE);
         //}
 
     }
@@ -337,17 +334,17 @@ public class MainVideo extends AppCompatActivity {
 
     }
 
-private void download_video()
-{
+    private void download_video()
+    {
 
-}
+    }
 
     private StorageReference mStorageRef;
 
 
     public void pull_video(View view) {
 
-       // String query="foobar";
+        // String query="foobar";
         //Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
 
 /*
@@ -373,7 +370,7 @@ private void download_video()
 */
         //StorageReference storageRef=storage.getReference() ;
 
-       // FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        // FirebaseAuth mAuth = FirebaseAuth.getInstance();
 /*
         StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
 
@@ -397,18 +394,18 @@ private void download_video()
         videoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-             //   download_video();
+                //   download_video();
 
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.v("foobar", "Cannot write because:", e);
+                Log.i("foobar", "Cannot write because:", e);
                 e.printStackTrace();
             }
         });
-        
-        
+
+
         File filepath = Environment.getExternalStorageDirectory();
         File localFile = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
 
