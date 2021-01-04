@@ -8,8 +8,8 @@
     <string name="title_activity_main">Drone Reporter</string>
     <string name="presenter_mode">Engage Presenter Mode</string>
     <string name="documenter_mode">Engage Documenter Mode</string>
-
-
+    <string name="move">Move To</string>
+    <string name="manual">Manual Control</string>
 
 
 
