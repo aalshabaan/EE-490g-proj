@@ -11,57 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <io.github.controlwear.virtual.joystick.android.JoystickView
-        android:id="@+id/rollJoystick"
-        android:layout_width="wrap_content"
+    <androidx.fragment.app.FragmentContainerView
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_toLeftOf="@id/emergencyBt"
-        android:layout_alignParentLeft="true"
-        custom:JV_autoReCenterButton="true"
-        custom:JV_backgroundSizeRatio="100%"
-        android:layout_centerVertical="true"
-        android:hapticFeedbackEnabled="true"
-        android:layout_marginLeft="8dp"
-        custom:JV_borderWidth="2dp"
-        custom:JV_borderColor="@color/battery_red"
-        custom:JV_buttonImage="@drawable/ic_joystick_24"
-        custom:JV_buttonColor="@color/battery_red"/>
-
-
-    <io.github.controlwear.virtual.joystick.android.JoystickView
-        android:id="@+id/yawJoystick"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_toRightOf="@id/emergencyBt"
-        android:layout_alignParentRight="true"
-        custom:JV_autoReCenterButton="true"
-        custom:JV_backgroundSizeRatio="100%"
-        android:layout_centerVertical="true"
-        android:hapticFeedbackEnabled="true"
-        android:layout_marginLeft="8dp"
-        custom:JV_borderWidth="2dp"
-        custom:JV_borderColor="@color/battery_red"
-        custom:JV_buttonImage="@drawable/ic_joystick_24"
-        custom:JV_buttonColor="@color/battery_red"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Emergency"
-        android:id="@+id/emergencyBt"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:width="150dp"/>
-
-    <Button
-        android:id="@+id/moveToBt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/downloadBt"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:text="@string/move"
-        android:onClick="moveTo"/>
+        android:layout_below="@id/mode_selection_switch"
+        android:id="@+id/droneControlFragmentContainer"
+        android:name="ch.epfl.esl.dronereporter.ManualControlFragment"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -76,19 +31,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/takeOffOrLandBt"
-        android:layout_alignParentBottom="true"
+        android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:width="150dp"/>
 
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Download"
-        android:id="@+id/downloadBt"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:width="150dp"/>
+
 
     <ImageView
         android:layout_width="wrap_content"
@@ -113,33 +61,6 @@
         android:layout_toEndOf="@+id/textView"
         android:textColor="@color/battery_red" />
 
-    <TextView
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="roll"
-        android:id="@+id/textView2"
-        android:width="50dp"
-        android:textAlignment="center"
-        android:gravity="center"
-        android:layout_centerVertical="true"
-        android:layout_alignRight="@id/rollJoystick"
-        android:layout_alignLeft="@id/rollJoystick"
-        android:layout_alignTop="@id/rollJoystick"
-        android:layout_alignBottom="@id/rollJoystick"/>
-
-    <TextView
-        android:layout_width="110dp"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="yaw"
-        android:id="@+id/textView3"
-        android:width="50dp"
-        android:layout_alignTop="@+id/yawJoystick"
-        android:layout_alignRight="@+id/yawJoystick"
-        android:layout_alignLeft="@id/yawJoystick"
-        android:layout_alignBottom="@id/yawJoystick"
-        android:gravity="center"/>
 
     <Switch
         android:id="@+id/mode_selection_switch"
@@ -147,6 +68,5 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/batteryLabel"
         android:layout_alignParentLeft="true"
-        android:thumb="@drawable/ic_joystick_24"
         android:onClick="switchMode"/>
 </RelativeLayout>

@@ -15,6 +15,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentContainerView;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.parrot.arsdk.arcommands.ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM;
@@ -43,6 +46,10 @@ public class BebopActivity extends AppCompatActivity {
     private static final boolean MANUAL_MODE = true;
     private static final boolean AUTO_PILOT = false;
     private BebopDrone mBebopDrone;
+
+
+    private ManualControlFragment mManualControlFragment;
+
 
     private ProgressDialog mConnectionProgressDialog;
     private ProgressDialog mDownloadProgressDialog;
@@ -95,22 +102,24 @@ public class BebopActivity extends AppCompatActivity {
                     moveTo();
                 }
 
+
             }
         };
-
+       /*
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
         //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
         mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
         mRollJoystick = findViewById(R.id.rollJoystick);
-        mYawJoystick = findViewById(R.id.yawJoystick);
+        mYawJoystick = findViewById(R.id.yawJoystick);*/
         mModeSwitch = findViewById(R.id.mode_selection_switch);
         mModeSwitch.setChecked(AUTO_PILOT);
-        initIHM();
+        //initIHM();
         // manually call the callback to correctly engage the default mode
+
         switchMode(mModeSwitch);
-        startPositionOnWear();
+        //startPositionOnWear();
 
     }
 
@@ -298,16 +307,20 @@ public class BebopActivity extends AppCompatActivity {
     }
 
     public void switchMode(View view){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         if(((Switch)view).isChecked() == AUTO_PILOT){
             mModeSwitch.setThumbResource(R.drawable.ic_auto_24);
             LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
-
-            //TODO Switch fragments
+            Log.d(TAG, "switchMode: AUTO");
         }
         else{
             mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mWearBroadcastReceiver);
-            //TODO Switch fragments
+            Log.d(TAG, "switchMode: MANUAL");
+            ft.setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left);
+            ft.show(mManualControlFragment).commit();
+
+
         }
     }
 

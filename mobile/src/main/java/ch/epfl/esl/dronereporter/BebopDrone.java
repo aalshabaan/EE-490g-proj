@@ -278,7 +278,7 @@ public class BebopDrone implements Serializable {
     public ARCONTROLLER_ERROR_ENUM goToGPSLocation(double latitude, double longitude, double altitude, float heading){
         ARCONTROLLER_ERROR_ENUM result = eARCONTROLLER_ERROR_UNKNOWN_ENUM_VALUE;
         if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
-            result = mDeviceController.getFeatureARDrone3().sendPilotingMoveTo(latitude, longitude, altitude, ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_HEADING_START, 0f);
+            result = mDeviceController.getFeatureARDrone3().sendPilotingMoveTo(latitude, longitude, altitude, ARCOMMANDS_ARDRONE3_PILOTING_MOVETO_ORIENTATION_MODE_HEADING_START, heading);
         }
         return  result;
     }

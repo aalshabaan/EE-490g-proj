@@ -12,9 +12,6 @@
     <string name="manual">Manual Control</string>
 
 
-
-
-
     <string name="disconnect">Disconnect Drone</string>
     <string name="select_drone">Connect to Drone</string>
     <string name="review_footage">Review Footage</string>

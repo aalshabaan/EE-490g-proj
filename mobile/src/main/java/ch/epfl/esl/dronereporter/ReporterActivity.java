@@ -163,12 +163,6 @@ public class ReporterActivity extends AppCompatActivity {
         });
 
 
-        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.emergency();
-            }
-        });
-
         mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
         mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

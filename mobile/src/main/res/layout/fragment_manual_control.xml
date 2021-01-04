@@ -1,0 +1,81 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    tools:context=".BebopActivity"
+    android:id="@+id/piloting_view">
+
+
+
+    <io.github.controlwear.virtual.joystick.android.JoystickView
+        android:id="@+id/rollJoystick"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_toLeftOf="@id/emergencyBt"
+        android:layout_alignParentLeft="true"
+        custom:JV_autoReCenterButton="true"
+        custom:JV_backgroundSizeRatio="100%"
+        android:layout_centerVertical="true"
+        android:hapticFeedbackEnabled="true"
+        custom:JV_borderWidth="2dp"
+        custom:JV_borderColor="@color/battery_red"
+        custom:JV_buttonImage="@drawable/ic_joystick_24"
+        custom:JV_buttonColor="@color/battery_red"/>
+
+
+    <io.github.controlwear.virtual.joystick.android.JoystickView
+        android:id="@+id/yawJoystick"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_toRightOf="@id/emergencyBt"
+        android:layout_alignParentRight="true"
+        custom:JV_autoReCenterButton="true"
+        custom:JV_backgroundSizeRatio="100%"
+        android:layout_centerVertical="true"
+        android:hapticFeedbackEnabled="true"
+        android:layout_marginLeft="8dp"
+        custom:JV_borderWidth="2dp"
+        custom:JV_borderColor="@color/battery_red"
+        custom:JV_buttonImage="@drawable/ic_joystick_24"
+        custom:JV_buttonColor="@color/battery_red"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Emergency"
+        android:id="@+id/emergencyBt"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:width="150dp"/>
+
+
+    <TextView
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="roll"
+        android:id="@+id/textView2"
+        android:width="50dp"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:layout_centerVertical="true"
+        android:layout_alignRight="@id/rollJoystick"
+        android:layout_alignLeft="@id/rollJoystick"
+        android:layout_alignTop="@id/rollJoystick"
+        android:layout_alignBottom="@id/rollJoystick"/>
+
+    <TextView
+        android:layout_width="110dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="yaw"
+        android:id="@+id/textView3"
+        android:width="50dp"
+        android:layout_alignTop="@+id/yawJoystick"
+        android:layout_alignRight="@+id/yawJoystick"
+        android:layout_alignLeft="@id/yawJoystick"
+        android:layout_alignBottom="@id/yawJoystick"
+        android:gravity="center"/>
+
+</RelativeLayout>

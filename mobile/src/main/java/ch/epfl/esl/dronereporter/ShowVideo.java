@@ -10,7 +10,7 @@ public class ShowVideo extends AppCompatActivity {
 
 
     private RecyclerView recyclerView;
-    private RecyclerViewAdapter recyclerViewAdapter;
+    //private RecyclerViewAdapter recyclerViewAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,9 +20,9 @@ public class ShowVideo extends AppCompatActivity {
         recyclerView=findViewById(R.id.recyclerView_ShowVideo);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-       recyclerViewAdapter= new RecyclerViewAdapter();
+       //recyclerViewAdapter= new RecyclerViewAdapter();
 
-        recyclerView.setAdapter(recyclerViewAdapter);
+       // recyclerView.setAdapter(recyclerViewAdapter);
 
     }
 }
