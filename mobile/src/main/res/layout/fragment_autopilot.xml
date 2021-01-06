@@ -1,0 +1,79 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    tools:context=".BebopActivity"
+    android:id="@+id/autopiloting_view">
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Emergency"
+        android:id="@+id/emergencyBt"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:width="150dp"
+        android:onClick="emergencyButtonClicked"/>
+
+    <SeekBar
+        android:id="@+id/distanceSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:min="6"
+        android:max="20"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/distance"
+        android:id="@+id/distanceTextLabel"
+        android:layout_above="@id/distanceSeekBar"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/distanceTextLabel"
+        android:layout_alignTop="@id/distanceTextLabel"
+        android:text="PLACEHOLDER"
+        android:id="@+id/distanceTextValue"/>
+
+    <SeekBar
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/distanceTextLabel"
+        android:layout_marginBottom="50dp"
+        android:layout_alignParentLeft="true"
+        android:id="@+id/angleSeekBar"
+        android:min="0"
+        android:max="36"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/angle"
+        android:id="@+id/angleTextLabel"
+        android:layout_above="@id/angleSeekBar"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/angleTextLabel"
+        android:layout_alignTop="@id/angleTextLabel"
+        android:text="PLACEHOLDER"
+        android:id="@+id/angleTextValue"/>
+
+
+
+
+</RelativeLayout>

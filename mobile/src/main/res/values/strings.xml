@@ -7,9 +7,11 @@
     <string name="photo_upload_failed">Photo upload failed</string>
     <string name="title_activity_main">Drone Reporter</string>
     <string name="presenter_mode">Engage Presenter Mode</string>
-    <string name="documenter_mode">Engage Documenter Mode</string>
+    <string name="documenter_mode">Engage Drone</string>
     <string name="move">Move To</string>
     <string name="manual">Manual Control</string>
+    <string name="distance">Distance: </string>
+    <string name="angle">Angle: </string>
 
 
     <string name="disconnect">Disconnect Drone</string>

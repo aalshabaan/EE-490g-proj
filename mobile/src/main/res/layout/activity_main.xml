@@ -28,19 +28,7 @@
         app:layout_constraintLeft_toRightOf="@id/batteryPercentage"
         app:layout_constraintTop_toTopOf="@id/batteryPercentage" />
 
-    <Button
-        android:id="@+id/presenterModeButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="300dp"
-        android:layout_marginRight="8dp"
-        android:onClick="engageDrone"
-        android:text="@string/presenter_mode"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+
 
     <Button
         android:id="@+id/documenterModeButton"
@@ -54,7 +42,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toTopOf="@id/selectDroneButton"
-        app:layout_constraintTop_toBottomOf="@id/presenterModeButton" />
+        app:layout_constraintTop_toBottomOf="@id/mainIconImageView" />
 
     <Button
         android:id="@+id/footageReviewButton"
@@ -95,7 +83,7 @@
     <ImageView
         android:id="@+id/mainIconImageView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="300dp"
         android:src="@mipmap/drone_icon"
         android:layout_marginTop="30dp"
         app:layout_constraintBottom_toTopOf="@+id/presenterModeButton"

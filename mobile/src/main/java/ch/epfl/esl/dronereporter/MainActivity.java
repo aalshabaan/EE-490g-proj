@@ -87,23 +87,9 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No drone found, connect first!", Toast.LENGTH_LONG).show();
             return;
         }
-
-        switch (view.getId()){
-            case R.id.presenterModeButton:
-                //Log.i(TAG, "engageDrone: Presenter Mode");
-                Intent intent = new Intent(this, ReporterActivity.class);
-                intent.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
-                startActivity(intent);
-                break;
-            case R.id.documenterModeButton:
-                // different Intent name because Android Studio considers all cases as the same scope
-                Intent i = new Intent(this, BebopActivity.class);
-                i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
-                startActivity(i);
-                break;
-            default:
-                Toast.makeText(this, "Unknown operation mode", Toast.LENGTH_SHORT).show();
-        }
+        Intent i = new Intent(this, BebopActivity.class);
+        i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
+        startActivity(i);
     }
 
     public void reviewFootage(View view){

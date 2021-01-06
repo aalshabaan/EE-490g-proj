@@ -47,7 +47,8 @@
         android:id="@+id/emergencyBt"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:width="150dp"/>
+        android:width="150dp"
+        android:onClick="emergencyButtonClicked"/>
 
 
     <TextView

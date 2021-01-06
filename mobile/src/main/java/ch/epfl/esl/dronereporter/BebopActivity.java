@@ -35,7 +35,7 @@ import static java.lang.Math.round;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
-public class BebopActivity extends AppCompatActivity {
+public class BebopActivity extends AppCompatActivity implements ManualControlFragment.OnJoystickMovedListener, AutopilotFragment.OnSeekBarMovedListener{
     private static final String TAG = "BebopActivity";
     public static final String RECEIVED_LOCATION = "RECEIVE_LOCATION";
     public static final String LONGITUDE = "LONGITUDE";
@@ -49,6 +49,7 @@ public class BebopActivity extends AppCompatActivity {
 
 
     private ManualControlFragment mManualControlFragment;
+    private AutopilotFragment mAutoPilotFragment;
 
 
     private ProgressDialog mConnectionProgressDialog;
@@ -72,6 +73,8 @@ public class BebopActivity extends AppCompatActivity {
     private double latitudeUser;
     private double longitudeUser;
     private boolean moveBool = false;
+    private float rayon;
+    private int angle;
 
 
     private int mNbMaxDownload;
@@ -105,21 +108,22 @@ public class BebopActivity extends AppCompatActivity {
 
             }
         };
-       /*
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
         //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
         mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
-        mRollJoystick = findViewById(R.id.rollJoystick);
-        mYawJoystick = findViewById(R.id.yawJoystick);*/
+
         mModeSwitch = findViewById(R.id.mode_selection_switch);
         mModeSwitch.setChecked(AUTO_PILOT);
-        //initIHM();
-        // manually call the callback to correctly engage the default mode
 
+        mManualControlFragment = ManualControlFragment.getInstance();
+        mAutoPilotFragment = AutopilotFragment.getInstance();
+        getSupportFragmentManager().beginTransaction().add(R.id.droneControlFragmentContainer,mAutoPilotFragment).commit();
+        initIHM();
+        // manually call the callback to correctly engage the default mode
         switchMode(mModeSwitch);
-        //startPositionOnWear();
+        startPositionOnWear();
 
     }
 
@@ -176,22 +180,14 @@ public class BebopActivity extends AppCompatActivity {
         startService(intentStartRec);
     }
 
+    public void emergencyButtonClicked (View view){
+        mBebopDrone.emergency();
+    }
+
 
     private void initIHM() {
         mVideoView = (H264VideoView) findViewById(R.id.videoView);
 
-        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.emergency();
-            }
-        });
-
-
-        findViewById(R.id.emergencyBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.emergency();
-            }
-        });
 
         mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
         mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
@@ -235,52 +231,20 @@ public class BebopActivity extends AppCompatActivity {
             }
         });
 
-        mRollJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
-            @Override
-            public void onMove(int angle, int strength) {
-                byte x = (byte) round(strength * cos(toRadians(angle)));
-                byte y = (byte) round(strength * sin(toRadians(angle)));
-
-                if(x!=0 || y!=0){
-                    mBebopDrone.setRoll(x);
-                    mBebopDrone.setPitch(y);
-                    mBebopDrone.setFlag((byte) 1);
-                }
-                else{
-                    mBebopDrone.setPitch((byte) 0);
-                    mBebopDrone.setRoll((byte) 0);
-                    mBebopDrone.setFlag((byte) 0);
-                }
-            }
-        });
 
 
-        mYawJoystick.setOnMoveListener(new JoystickView.OnMoveListener() {
-            @Override
-            public void onMove(int angle, int strength) {
-                byte x = (byte) round(strength * cos(toRadians(angle)));
-                byte y = (byte) round(strength * sin(toRadians(angle)));
 
-                if(x!=0 || y!=0){
-                    mBebopDrone.setYaw(x);
-                    mBebopDrone.setGaz(y);
-                }
-                else{
-                    mBebopDrone.setYaw((byte) 0);
-                    mBebopDrone.setGaz((byte) 0);
-                }
-            }
-        });
+
 
         mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
-        mMoveTo = findViewById(R.id.moveToBt);
+
     }
 
     public void moveTo(View view){
         moveBool = true;
         float heading; //orientation of the drone compared the the north
         double altitude = 3; //in meters above the ground
-        double rayon = 1;
+
         double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
         double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
         double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
@@ -292,7 +256,7 @@ public class BebopActivity extends AppCompatActivity {
     public void moveTo(){
         float heading; //orientation of the drone compared the the north
         double altitude = 3; //in meters above the ground
-        double rayon = 1;
+
         double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
         double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
         double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
@@ -311,14 +275,14 @@ public class BebopActivity extends AppCompatActivity {
         if(((Switch)view).isChecked() == AUTO_PILOT){
             mModeSwitch.setThumbResource(R.drawable.ic_auto_24);
             LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
+            ft.replace(R.id.droneControlFragmentContainer, mAutoPilotFragment).commit();
             Log.d(TAG, "switchMode: AUTO");
         }
         else{
             mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
             LocalBroadcastManager.getInstance(this).unregisterReceiver(mWearBroadcastReceiver);
             Log.d(TAG, "switchMode: MANUAL");
-            ft.setCustomAnimations(R.anim.fui_slide_in_right, R.anim.fui_slide_out_left);
-            ft.show(mManualControlFragment).commit();
+            ft.replace(R.id.droneControlFragmentContainer,mManualControlFragment).commit();
 
 
         }
@@ -348,11 +312,11 @@ public class BebopActivity extends AppCompatActivity {
 
         @Override
         public void onGpsStatusChanged(byte fixed) {
-            GpsStatus = fixed;
+            /*GpsStatus = fixed;
             if (fixed == 1)
                 mMoveTo.setEnabled(true);
             else
-                mMoveTo.setEnabled(false);
+                mMoveTo.setEnabled(false);*/
         }
 
         @Override
@@ -458,4 +422,47 @@ public class BebopActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    public void onJoystickMoved(int joystickID, int magnitude, int angle) {
+        byte x = (byte) round(magnitude * cos(toRadians(angle)));
+        byte y = (byte) round(magnitude * sin(toRadians(angle)));
+
+        switch (joystickID) {
+            case ManualControlFragment.ROLL:
+
+                if (x != 0 || y != 0) {
+                    mBebopDrone.setRoll(x);
+                    mBebopDrone.setPitch(y);
+                    mBebopDrone.setFlag((byte) 1);
+                } else {
+                    mBebopDrone.setPitch((byte) 0);
+                    mBebopDrone.setRoll((byte) 0);
+                    mBebopDrone.setFlag((byte) 0);
+                }
+                break;
+            case ManualControlFragment.YAW:
+
+                if (x != 0 || y != 0) {
+                    mBebopDrone.setYaw(x);
+                    mBebopDrone.setGaz(y);
+                } else {
+                    mBebopDrone.setYaw((byte) 0);
+                    mBebopDrone.setGaz((byte) 0);
+                }
+            }
+        }
+
+    @Override
+    public void onSeekBarMoved(int seekBarID, int value) {
+        switch (seekBarID){
+            case AutopilotFragment.ANGLE:
+                angle = value*10;
+                mAutoPilotFragment.setAngle(angle);
+                break;
+            case AutopilotFragment.DISTANCE:
+                rayon = value/2.0f;
+                mAutoPilotFragment.setDistance(rayon);
+        }
+    }
 }
