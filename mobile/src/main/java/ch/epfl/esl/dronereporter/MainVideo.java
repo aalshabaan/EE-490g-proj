@@ -5,6 +5,8 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -49,6 +51,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 
+import io.grpc.Context;
+
 public class MainVideo extends AppCompatActivity {
 
     private static final int PICK_VIDEO=1;
@@ -91,7 +95,7 @@ public class MainVideo extends AppCompatActivity {
         videoView.setMediaController(mediaController);
         videoView.start();
 
-
+/*
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null) {
@@ -101,7 +105,7 @@ public class MainVideo extends AppCompatActivity {
             signInAnonymously();
         }
 
-
+*/
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +117,7 @@ public class MainVideo extends AppCompatActivity {
 
     }
 
-
+/*
     private void signInAnonymously() {
         mAuth.signInAnonymously().addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
             @Override
@@ -128,7 +132,7 @@ public class MainVideo extends AppCompatActivity {
                     }
                 });
     }
-
+*/
 
 
     @Override
@@ -385,8 +389,36 @@ public class MainVideo extends AppCompatActivity {
 */
 
 
+        //  String photo =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
+
+        StorageReference storageRef =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
+        //String photo = "gs://dronereporter-deae6.appspot.com/bay_area_wallpaper.jpg";
+
+        // StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
+        //       (photo);
+        storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+             /*   final Bitmap selectedImage = BitmapFactory.decodeByteArray(bytes, 0,
+                        bytes.length);
+                ImageView imageView = findViewById(R.id.userImage);
+                imageView.setImageBitmap(selectedImage);
+              */
+                Log.v("foobar", "successful download");
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("foobar", "Failed download");
+
+            }
+        });
 
 
+
+
+/*
         StorageReference storageRef= FirebaseStorage.getInstance().getReference();
 //bay_area_wallpaper //1609344265255
         StorageReference videoRef= storageRef.child("bay_area_wallpaper.jpg");
@@ -394,7 +426,7 @@ public class MainVideo extends AppCompatActivity {
         videoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
-                //   download_video();
+             //   download_video();
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -408,7 +440,7 @@ public class MainVideo extends AppCompatActivity {
 
         File filepath = Environment.getExternalStorageDirectory();
         File localFile = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
-
+*/
 
 
 /*
