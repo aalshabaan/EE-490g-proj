@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         mBatteryImageView = findViewById(R.id.batteryIcon);
         mBatteryTextView = findViewById(R.id.batteryPercentage);
         mConnectDisconnectButton = findViewById(R.id.selectDroneButton);
+        mDroneListener = new MainActivityDroneListener();
     }
 
     // Add and remove the listener following the activity's life cycle
@@ -107,9 +108,8 @@ public class MainActivity extends AppCompatActivity {
             if(mServiceDrone != null){
                 //if(mDrone.disconnect()){
                     mConnected = false;
-                    //mDrone.removeListener(mDroneListener);
-                    mDroneListener = null;
-                    mDrone = null;
+                    mDrone.removeListener(mDroneListener);
+                    mDrone.disconnect();
                     mConnectDisconnectButton.setText(getText(R.string.select_drone));
                     mServiceDrone = null;
                 //}
@@ -129,8 +129,9 @@ public class MainActivity extends AppCompatActivity {
             mDrone.addListener(mDroneListener);
 
              */
-
             mServiceDrone = data.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
+            mDrone = new BebopDrone(this, mServiceDrone);
+            mDrone.addListener(mDroneListener);
             mConnectDisconnectButton.setText(getText(R.string.disconnect));
             mConnected = true;
             //Toast.makeText(MainActivity.this, "Activity result", Toast.LENGTH_SHORT).show();

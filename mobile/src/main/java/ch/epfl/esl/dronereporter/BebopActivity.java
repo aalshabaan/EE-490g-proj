@@ -35,7 +35,9 @@ import static java.lang.Math.round;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
-public class BebopActivity extends AppCompatActivity implements ManualControlFragment.OnJoystickMovedListener, AutopilotFragment.OnSeekBarMovedListener{
+public class BebopActivity extends AppCompatActivity implements
+        ManualControlFragment.OnJoystickMovedListener, AutopilotFragment.OnSeekBarMovedListener{
+
     private static final String TAG = "BebopActivity";
     public static final String RECEIVED_LOCATION = "RECEIVE_LOCATION";
     public static final String LONGITUDE = "LONGITUDE";
@@ -45,8 +47,8 @@ public class BebopActivity extends AppCompatActivity implements ManualControlFra
     private static final double LATLNG_METERS = 111139;
     private static final boolean MANUAL_MODE = true;
     private static final boolean AUTO_PILOT = false;
-    private BebopDrone mBebopDrone;
 
+    private BebopDrone mBebopDrone;
 
     private ManualControlFragment mManualControlFragment;
     private AutopilotFragment mAutoPilotFragment;
@@ -60,9 +62,7 @@ public class BebopActivity extends AppCompatActivity implements ManualControlFra
     private TextView mBatteryLabel;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
-    private JoystickView mRollJoystick;
-    private JoystickView mYawJoystick;
-    private Button mMoveTo;
+
     private Switch mModeSwitch;
     private BroadcastReceiver mWearBroadcastReceiver;
 
@@ -80,215 +80,8 @@ public class BebopActivity extends AppCompatActivity implements ManualControlFra
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bebop_joystick);
-
-       mWearBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "watch position");
-                //Bundle b = getIntent().getExtras();
-                double prevLat = latitudeUser;
-                double prevLong = longitudeUser;
-                latitudeUser = intent.getDoubleExtra(LATITUDE,-1);
-                longitudeUser = intent.getDoubleExtra(LONGITUDE,-1);
-                Log.d(TAG, "watch position" + latitudeUser);
-                //mLatitudeUser.setText(String.format("%f", latitudeUser));
-                //mLongitudeUser.setText(String.format("%f", longitudeUser));
-                double delta = Math.pow(latitudeUser-prevLat,2) + Math.pow(longitudeUser - prevLong,2);
-                double threshold = 0.5/LATLNG_METERS; // in degree
-
-                if (GpsStatus == 1 && latitudeUser != -1 && longitudeUser != -1 && moveBool &&
-                        delta > Math.pow(threshold,2)){
-                    moveTo();
-                }
-
-
-            }
-        };
-        Intent intent = getIntent();
-        ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
-        //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
-        mBebopDrone = new BebopDrone(this, service);
-        mBebopDrone.addListener(mBebopListener);
-
-        mModeSwitch = findViewById(R.id.mode_selection_switch);
-        mModeSwitch.setChecked(AUTO_PILOT);
-
-        mManualControlFragment = ManualControlFragment.getInstance();
-        mAutoPilotFragment = AutopilotFragment.getInstance();
-        getSupportFragmentManager().beginTransaction().add(R.id.droneControlFragmentContainer,mAutoPilotFragment).commit();
-        initIHM();
-        // manually call the callback to correctly engage the default mode
-        switchMode(mModeSwitch);
-        startPositionOnWear();
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // show a loading view while the bebop drone is connecting
-        if ((mBebopDrone != null) && !(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING.equals(mBebopDrone.getConnectionState())))
-        {
-            mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
-            mConnectionProgressDialog.setIndeterminate(true);
-            mConnectionProgressDialog.setMessage("Connecting ...");
-            mConnectionProgressDialog.setCancelable(false);
-            mConnectionProgressDialog.show();
-
-            // if the connection to the Bebop fails, finish the activity
-            if (!mBebopDrone.connect()) {
-                finish();
-            }
-        }
-
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (mBebopDrone != null)
-        {
-            mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
-            mConnectionProgressDialog.setIndeterminate(true);
-            mConnectionProgressDialog.setMessage("Disconnecting ...");
-            mConnectionProgressDialog.setCancelable(false);
-            mConnectionProgressDialog.show();
-
-            if (!mBebopDrone.disconnect()) {
-                finish();
-            }
-        }
-    }
-
-    @Override
-    public void onDestroy()
-    {
-        mBebopDrone.dispose();
-        super.onDestroy();
-    }
-
-    // Starts the ReporterActivity of the watch
-    public void startPositionOnWear() {
-        Log.d(TAG, "connecting to the watch");
-        Intent intentStartRec = new Intent(this, WearService.class);
-        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
-        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
-        startService(intentStartRec);
-    }
-
-    public void emergencyButtonClicked (View view){
-        mBebopDrone.emergency();
-    }
-
-
-    private void initIHM() {
-        mVideoView = (H264VideoView) findViewById(R.id.videoView);
-
-
-        mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
-        mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                switch (mBebopDrone.getFlyingState()) {
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED:
-                        mBebopDrone.takeOff();
-                        break;
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING:
-                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING:
-                        mBebopDrone.land();
-                        break;
-                    default:
-                }
-            }
-        });
-
-        findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.takePicture();
-            }
-        });
-
-        mDownloadBt = (Button)findViewById(R.id.downloadBt);
-        mDownloadBt.setEnabled(false);
-        mDownloadBt.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                mBebopDrone.getLastFlightMedias();
-
-                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
-                mDownloadProgressDialog.setIndeterminate(true);
-                mDownloadProgressDialog.setMessage("Fetching medias");
-                mDownloadProgressDialog.setCancelable(false);
-                mDownloadProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mBebopDrone.cancelGetLastFlightMedias();
-                    }
-                });
-                mDownloadProgressDialog.show();
-            }
-        });
-
-
-
-
-
-
-        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
-
-    }
-
-    public void moveTo(View view){
-        moveBool = true;
-        float heading; //orientation of the drone compared the the north
-        double altitude = 3; //in meters above the ground
-
-        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
-        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
-        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
-        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
-        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
-        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
-    }
-
-    public void moveTo(){
-        float heading; //orientation of the drone compared the the north
-        double altitude = 3; //in meters above the ground
-
-        double angle = Math.atan2(longitudeUser-longitudeDrone,latitudeUser-latitudeDrone);
-        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
-        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
-        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
-        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
-        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
-    }
-
-    public void cancelMoveTo(View view){
-        moveBool = false;
-        mBebopDrone.cancelGoTo();
-    }
-
-    public void switchMode(View view){
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        if(((Switch)view).isChecked() == AUTO_PILOT){
-            mModeSwitch.setThumbResource(R.drawable.ic_auto_24);
-            LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
-            ft.replace(R.id.droneControlFragmentContainer, mAutoPilotFragment).commit();
-            Log.d(TAG, "switchMode: AUTO");
-        }
-        else{
-            mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(mWearBroadcastReceiver);
-            Log.d(TAG, "switchMode: MANUAL");
-            ft.replace(R.id.droneControlFragmentContainer,mManualControlFragment).commit();
-
-
-        }
-    }
-
-
+    // Define a custom drone listener using an anonymous class, doing this in the Activity
+    // initialisation ensures that it is well defined by the time it is assigned to the drone in onCreate()
     private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
 
 
@@ -422,6 +215,209 @@ public class BebopActivity extends AppCompatActivity implements ManualControlFra
             }
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_bebop_joystick);
+
+       mWearBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d(TAG, "watch position");
+                //Bundle b = getIntent().getExtras();
+                double prevLat = latitudeUser;
+                double prevLong = longitudeUser;
+                latitudeUser = intent.getDoubleExtra(LATITUDE,-1);
+                longitudeUser = intent.getDoubleExtra(LONGITUDE,-1);
+                Log.d(TAG, "watch position" + latitudeUser);
+                //mLatitudeUser.setText(String.format("%f", latitudeUser));
+                //mLongitudeUser.setText(String.format("%f", longitudeUser));
+                double delta = Math.pow(latitudeUser-prevLat,2) + Math.pow(longitudeUser - prevLong,2);
+                double threshold = 0.5/LATLNG_METERS; // in degree
+
+                if (GpsStatus == 1 && latitudeUser != -1 && longitudeUser != -1 && moveBool &&
+                        delta > Math.pow(threshold,2)){
+                    moveTo();
+                }
+
+
+            }
+        };
+        Intent intent = getIntent();
+        ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
+        //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
+        mBebopDrone = new BebopDrone(this, service);
+        mBebopDrone.addListener(mBebopListener);
+        mModeSwitch = findViewById(R.id.mode_selection_switch);
+        mModeSwitch.setChecked(AUTO_PILOT);
+
+        mManualControlFragment = ManualControlFragment.getInstance();
+        mAutoPilotFragment = AutopilotFragment.getInstance();
+        getSupportFragmentManager().beginTransaction().add(R.id.droneControlFragmentContainer,mAutoPilotFragment).commit();
+        initIHM();
+        // manually call the callback to correctly engage the default mode
+        switchMode(mModeSwitch);
+        startPositionOnWear();
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // show a loading view while the bebop drone is connecting
+        if ((mBebopDrone != null) && !(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING.equals(mBebopDrone.getConnectionState())))
+        {
+            mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
+            mConnectionProgressDialog.setIndeterminate(true);
+            mConnectionProgressDialog.setMessage("Connecting ...");
+            mConnectionProgressDialog.setCancelable(false);
+            mConnectionProgressDialog.show();
+
+            // if the connection to the Bebop fails, finish the activity
+            if (!mBebopDrone.connect()) {
+                finish();
+            }
+        }
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mBebopDrone != null)
+        {
+            mConnectionProgressDialog = new ProgressDialog(this, R.style.AppCompatAlertDialogStyle);
+            mConnectionProgressDialog.setIndeterminate(true);
+            mConnectionProgressDialog.setMessage("Disconnecting ...");
+            mConnectionProgressDialog.setCancelable(false);
+            mConnectionProgressDialog.show();
+
+            if (!mBebopDrone.disconnect()) {
+                finish();
+            }
+        }
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        mBebopDrone.dispose();
+        super.onDestroy();
+    }
+
+    // Starts the ReporterActivity of the watch
+    public void startPositionOnWear() {
+        Log.d(TAG, "connecting to the watch");
+        Intent intentStartRec = new Intent(this, WearService.class);
+        intentStartRec.setAction(WearService.ACTION_SEND.STARTACTIVITY.name());
+        intentStartRec.putExtra(WearService.ACTIVITY_TO_START, BuildConfig.W_wearreporteractivity);
+        startService(intentStartRec);
+    }
+
+    public void emergencyButtonClicked (View view){
+        mBebopDrone.emergency();
+    }
+
+
+    private void initIHM() {
+        mVideoView = (H264VideoView) findViewById(R.id.videoView);
+
+
+        mTakeOffLandBt = (Button) findViewById(R.id.takeOffOrLandBt);
+        mTakeOffLandBt.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                switch (mBebopDrone.getFlyingState()) {
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_LANDED:
+                        mBebopDrone.takeOff();
+                        break;
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING:
+                    case ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING:
+                        mBebopDrone.land();
+                        break;
+                    default:
+                }
+            }
+        });
+
+        findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.takePicture();
+            }
+        });
+
+        mDownloadBt = (Button)findViewById(R.id.downloadBt);
+        mDownloadBt.setEnabled(false);
+        mDownloadBt.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                mBebopDrone.getLastFlightMedias();
+
+                mDownloadProgressDialog = new ProgressDialog(BebopActivity.this, R.style.AppCompatAlertDialogStyle);
+                mDownloadProgressDialog.setIndeterminate(true);
+                mDownloadProgressDialog.setMessage("Fetching medias");
+                mDownloadProgressDialog.setCancelable(false);
+                mDownloadProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mBebopDrone.cancelGetLastFlightMedias();
+                    }
+                });
+                mDownloadProgressDialog.show();
+            }
+        });
+
+
+
+
+
+
+        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
+
+    }
+
+    public void moveTo(View view){
+        moveBool = true;
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void moveTo(){
+        float heading; //orientation of the drone compared the the north
+        double altitude = 3; //in meters above the ground
+        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
+        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+    }
+
+    public void cancelMoveTo(View view){
+        moveBool = false;
+        mBebopDrone.cancelGoTo();
+    }
+
+    public void switchMode(View view){
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        if(((Switch)view).isChecked() == AUTO_PILOT){
+            mModeSwitch.setThumbResource(R.drawable.ic_auto_24);
+            LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
+            ft.replace(R.id.droneControlFragmentContainer, mAutoPilotFragment).commit();
+            Log.d(TAG, "switchMode: AUTO");
+        }
+        else{
+            mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(mWearBroadcastReceiver);
+            Log.d(TAG, "switchMode: MANUAL");
+            ft.replace(R.id.droneControlFragmentContainer,mManualControlFragment).commit();
+
+        }
+    }
+
 
     @Override
     public void onJoystickMoved(int joystickID, int magnitude, int angle) {

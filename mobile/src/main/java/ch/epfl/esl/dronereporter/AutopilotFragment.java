@@ -23,15 +23,16 @@ public class AutopilotFragment extends Fragment {
 
     public static final int DISTANCE = 0;
     public static final int ANGLE = 1;
+    public static final int ALTITUDE = 2;
 
     private static final String TAG = "AutoPilotFragment";
 
-    private SeekBar mDistanceSeekBar, mAngleSeekBar;
+    private SeekBar mDistanceSeekBar, mAngleSeekBar, mAltitudeSeekBar;
     private static AutopilotFragment instance = null;
     private OnSeekBarMovedListener mlistener;
-    private TextView mDistanceTextView, mAngleTextView;
+    private TextView mDistanceTextView, mAngleTextView, mAltitudeTextView;
     private int angle;
-    private float rayon;
+    private float rayon, altitude;
 
 
     public AutopilotFragment() {
@@ -66,6 +67,11 @@ public class AutopilotFragment extends Fragment {
         mAngleTextView.setText(String.valueOf(angle));
     }
 
+    public void setAltitude(float altitude){
+        this.altitude = altitude;
+        mAltitudeTextView.setText(String.valueOf(altitude));
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +85,8 @@ public class AutopilotFragment extends Fragment {
         super.onStart();
         mDistanceSeekBar = getActivity().findViewById(R.id.distanceSeekBar);
         mAngleSeekBar = getActivity().findViewById(R.id.angleSeekBar);
+        mAltitudeSeekBar = getActivity().findViewById(R.id.altitudeSeekBar);
+
         mDistanceSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -97,6 +105,7 @@ public class AutopilotFragment extends Fragment {
 
             }
         });
+
         mAngleSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
@@ -115,8 +124,29 @@ public class AutopilotFragment extends Fragment {
 
             }
         });
+
+        mAltitudeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+                if (b){
+                    mlistener.onSeekBarMoved(ALTITUDE, i);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
         mDistanceTextView = getActivity().findViewById(R.id.distanceTextValue);
         mAngleTextView = getActivity().findViewById(R.id.angleTextValue);
+        mAltitudeTextView = getActivity().findViewById(R.id.altitudeTextValue);
     }
 
     @Override
@@ -137,5 +167,6 @@ public class AutopilotFragment extends Fragment {
         super.onResume();
         mAngleTextView.setText(String.valueOf(angle));
         mDistanceTextView.setText(String.valueOf(rayon));
+        mAltitudeTextView.setText(String.valueOf(altitude));
     }
 }

@@ -48,7 +48,7 @@
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/distanceTextLabel"
+        android:layout_above="@id/distanceSeekBar"
         android:layout_marginBottom="50dp"
         android:layout_alignParentLeft="true"
         android:id="@+id/angleSeekBar"
@@ -72,6 +72,35 @@
         android:layout_alignTop="@id/angleTextLabel"
         android:text="PLACEHOLDER"
         android:id="@+id/angleTextValue"/>
+
+
+    <SeekBar
+        android:id="@+id/altitudeSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/angleSeekBar"
+        android:layout_marginBottom="50dp"
+        style="@style/Widget.AppCompat.SeekBar.Discrete"
+        android:min="6"
+        android:max="20"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/altitude"
+        android:id="@+id/altitideTextLabel"
+        android:layout_above="@id/altitudeSeekBar"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="8dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/altitideTextLabel"
+        android:layout_alignTop="@id/altitideTextLabel"
+        android:text="PLACEHOLDER"
+        android:id="@+id/altitudeTextValue"/>
 
 
 
