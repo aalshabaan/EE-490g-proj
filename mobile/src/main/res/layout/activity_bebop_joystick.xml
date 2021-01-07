@@ -78,5 +78,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/batteryLabel"
         android:layout_alignParentLeft="true"
-        android:onClick="switchMode"/>
+        android:onClick="switchMode"
+        android:alpha="1"/>
 </RelativeLayout>

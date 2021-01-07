@@ -32,7 +32,7 @@ public class AutopilotFragment extends Fragment {
     private OnSeekBarMovedListener mlistener;
     private TextView mDistanceTextView, mAngleTextView, mAltitudeTextView;
     private int angle;
-    private float rayon, altitude;
+    private float rayon = 3, altitude = 3;
 
 
     public AutopilotFragment() {

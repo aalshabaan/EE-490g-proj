@@ -68,9 +68,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         if (mDrone != null){
-            if(mDroneListener == null)
-                mDroneListener = new MainActivityDroneListener();
             mDrone.addListener(mDroneListener);
+            mDrone.connect();
         }
     }
 
@@ -88,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No drone found, connect first!", Toast.LENGTH_LONG).show();
             return;
         }
+        mDrone.disconnect();
         Intent i = new Intent(this, BebopActivity.class);
         i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
         startActivity(i);
@@ -131,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
              */
             mServiceDrone = data.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
             mDrone = new BebopDrone(this, mServiceDrone);
+            mDrone.connect();
             mDrone.addListener(mDroneListener);
             mConnectDisconnectButton.setText(getText(R.string.disconnect));
             mConnected = true;

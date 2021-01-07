@@ -43,7 +43,7 @@ public class BebopActivity extends AppCompatActivity implements
     public static final String LONGITUDE = "LONGITUDE";
     public static final String LATITUDE = "LATITUDE";
 
-
+    //conversion from Latitude/Longitude Degrees to meters
     private static final double LATLNG_METERS = 111139;
     private static final boolean MANUAL_MODE = true;
     private static final boolean AUTO_PILOT = false;
@@ -72,8 +72,8 @@ public class BebopActivity extends AppCompatActivity implements
     private double altitudeDrone;
     private double latitudeUser;
     private double longitudeUser;
-    private boolean moveBool = false;
-    private float rayon;
+    private boolean moveBool = true;
+    private float rayon, altitude;
     private int angle;
 
 
@@ -105,11 +105,7 @@ public class BebopActivity extends AppCompatActivity implements
 
         @Override
         public void onGpsStatusChanged(byte fixed) {
-            /*GpsStatus = fixed;
-            if (fixed == 1)
-                mMoveTo.setEnabled(true);
-            else
-                mMoveTo.setEnabled(false);*/
+            GpsStatus = fixed;
         }
 
         @Override
@@ -378,7 +374,6 @@ public class BebopActivity extends AppCompatActivity implements
     public void moveTo(View view){
         moveBool = true;
         float heading; //orientation of the drone compared the the north
-        double altitude = 3; //in meters above the ground
         double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
         double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
         heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
@@ -387,13 +382,13 @@ public class BebopActivity extends AppCompatActivity implements
     }
 
     public void moveTo(){
-        float heading; //orientation of the drone compared the the north
-        double altitude = 3; //in meters above the ground
-        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
-        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
-        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
+        float heading; //orientation of the drone compared the the north in degrees
+        double new_lat = latitudeUser - Math.sin(toRadians(angle))*rayon/LATLNG_METERS;
+        double new_long = longitudeUser - Math.cos(toRadians(angle))*rayon/LATLNG_METERS;
+        heading = (float) Math.toDegrees(Math.atan2(longitudeUser-new_long,latitudeUser-new_lat));
         ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
-        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+        if (result == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_ERROR)
+            Toast.makeText(this, "move " + result, Toast .LENGTH_SHORT).show();
     }
 
     public void cancelMoveTo(View view){
@@ -408,6 +403,7 @@ public class BebopActivity extends AppCompatActivity implements
             LocalBroadcastManager.getInstance(this).registerReceiver(mWearBroadcastReceiver, new IntentFilter(RECEIVED_LOCATION));
             ft.replace(R.id.droneControlFragmentContainer, mAutoPilotFragment).commit();
             Log.d(TAG, "switchMode: AUTO");
+            moveTo();
         }
         else{
             mModeSwitch.setThumbResource(R.drawable.ic_manual_24);
@@ -459,6 +455,10 @@ public class BebopActivity extends AppCompatActivity implements
             case AutopilotFragment.DISTANCE:
                 rayon = value/2.0f;
                 mAutoPilotFragment.setDistance(rayon);
+                break;
+            case AutopilotFragment.ALTITUDE:
+                altitude = value/2.0f;
+                mAutoPilotFragment.setAltitude(altitude);
         }
     }
 }
