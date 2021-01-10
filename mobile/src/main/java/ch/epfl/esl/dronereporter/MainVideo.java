@@ -38,9 +38,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -77,7 +80,6 @@ public class MainVideo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_video);
-        Log.i(TAG, "I am creating the activity");
 
         memberVideo = new MemberVideo();
 
@@ -95,18 +97,6 @@ public class MainVideo extends AppCompatActivity {
         videoView.setMediaController(mediaController);
         videoView.start();
 
-/*
-        mAuth = FirebaseAuth.getInstance();
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-
-
-        } else {
-            signInAnonymously();
-        }
-
-*/
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -114,26 +104,7 @@ public class MainVideo extends AppCompatActivity {
             }
         });
 
-
     }
-
-/*
-    private void signInAnonymously() {
-        mAuth.signInAnonymously().addOnSuccessListener(this, new OnSuccessListener<AuthResult>() {
-            @Override
-            public void onSuccess(AuthResult authResult) {
-
-            }
-        })
-                .addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.e("MainActivity", "signFailed****** ", exception);
-                    }
-                });
-    }
-*/
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -141,8 +112,6 @@ public class MainVideo extends AppCompatActivity {
 
         if(requestCode==PICK_VIDEO || resultCode ==RESULT_OK ||
                 data != null || data.getData()!= null){
-
-
 
             store_video(data);
             videoUri=data.getData();
@@ -163,7 +132,7 @@ public class MainVideo extends AppCompatActivity {
             FileInputStream in = videoAsset.createInputStream();
 
             File filepath = Environment.getExternalStorageDirectory();
-            File dir = new File(filepath.getAbsolutePath() + "/" + "Drone Reporter" + "/" + "Videos");
+            File dir = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
             if (!dir.exists()) {
                 dir.mkdirs();
             }
@@ -192,20 +161,6 @@ public class MainVideo extends AppCompatActivity {
             Log.i(TAG, "copy NOT successful");
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     public void choose_video(View view) {
 
@@ -242,7 +197,6 @@ public class MainVideo extends AppCompatActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
         {
             Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
-
         }
 
         else{
@@ -279,9 +233,6 @@ public class MainVideo extends AppCompatActivity {
             }
         }
     }
-
-
-
 
     private void UploadVideo()
     {
@@ -332,97 +283,49 @@ public class MainVideo extends AppCompatActivity {
                         }
                     });
 
-
         }
 
-
     }
 
-    private void download_video()
-    {
-
-    }
 
     private StorageReference mStorageRef;
 
-
     public void pull_video(View view) {
 
-        // String query="foobar";
-        //Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
+        String query="foobar";
+        Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
 
-/*
-        StorageReference storageRef= FirebaseStorage.getInstance().getReferenceFromUrl("https://firebasestorage.googleapis.com/v0/b/dronereporter-deae6.appspot.com/o/Video%2F1609673026240.mp4?alt=media&token=e82d209b-1c99-436a-ad41-dd92d320eba6");
-
-        storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+        firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onSuccess(byte[] bytes) {
+            public void onDataChange(DataSnapshot dataSnapshot) {
 
+                for (DataSnapshot data:dataSnapshot.getChildren()){
+
+                    String output=data.getValue().toString();
+                    Log.v(TAG, "Sucessful search: "+output);
+                    //Records models=data.getValue(Records.class);
+                    //String latitude=models.getLatitude();
+                    //String longitude=models.getLongitude();
+                }
             }
-        }).addOnFailureListener(new OnFailureListener() {
+
             @Override
-            public void onFailure(@NonNull Exception e) {
-
-            }
-        });
-*/
-/*
-       StorageReference videoRef= storageReference.child("video");
-
-        File filepath = Environment.getExternalStorageDirectory();
-        File localFile = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
-*/
-        //StorageReference storageRef=storage.getReference() ;
-
-        // FirebaseAuth mAuth = FirebaseAuth.getInstance();
-/*
-        StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
-
-// ImageView in your Activity
-        ImageView imageView = findViewById(R.id.imageView2);
-
-// Download directly from StorageReference using Glide
-// (See MyAppGlideModule for Loader registration)
-        Glide.with(this  context )
-                .load(storageReference);
-                .into(imageView);
-*/
-
-
-        //  String photo =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
-
-        StorageReference storageRef =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
-        //String photo = "gs://dronereporter-deae6.appspot.com/bay_area_wallpaper.jpg";
-
-        // StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
-        //       (photo);
-        storageRef.getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-             /*   final Bitmap selectedImage = BitmapFactory.decodeByteArray(bytes, 0,
-                        bytes.length);
-                ImageView imageView = findViewById(R.id.userImage);
-                imageView.setImageBitmap(selectedImage);
-              */
-                Log.v("foobar", "successful download");
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.e("foobar", "Failed download");
+            public void onCancelled(DatabaseError databaseError) {
+                Log.v(TAG, "Failed search");
 
             }
         });
 
+        // String videourl = // dataSnapshot.child("photo").getValue(String.class);
 
-
+        //StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videourl);
 
 /*
-        StorageReference storageRef= FirebaseStorage.getInstance().getReference();
-//bay_area_wallpaper //1609344265255
-        StorageReference videoRef= storageRef.child("bay_area_wallpaper.jpg");
+       // StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
+         //       (photo);
+*/
 
+/*
         videoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
@@ -437,29 +340,31 @@ public class MainVideo extends AppCompatActivity {
             }
         });
 
-
+*/
         File filepath = Environment.getExternalStorageDirectory();
         File localFile = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
-*/
+        if (!localFile.exists()) {
+            localFile.mkdirs();
+        }
 
+        File newfile = new File(localFile, "bay_area_wallpaper" + ".jpg");
 
-/*
-        videoRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+        if (newfile.exists()) newfile.delete();
+
+        StorageReference storageRef =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
+
+        storageRef.getFile(newfile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 // Local temp file has been created
-                Toast.makeText(MainVideo.this,"Videos successfully downloaded",Toast.LENGTH_SHORT).show();
+                Log.v(TAG, "successful download");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
-                Toast.makeText(MainVideo.this,"Failed to download Videos",Toast.LENGTH_SHORT).show();
-
+                Log.v(TAG, "failed download");
             }});
 
-    */
     }
-
-
 }
