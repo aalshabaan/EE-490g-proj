@@ -59,6 +59,13 @@ import io.grpc.Context;
 public class MainVideo extends AppCompatActivity {
 
     private static final int PICK_VIDEO=1;
+    private static final int PICTURE =0 ;
+    private static final int VIDEO =1 ;
+    private static final String VIDEO_PATH="/Drone Reporter/Videos";
+    private static final String PHOTO_PATH="/Drone Reporter/Photos";
+
+
+
     VideoView videoView;
     Button button;
     EditText editText;
@@ -67,12 +74,13 @@ public class MainVideo extends AppCompatActivity {
     private Uri videoUri;
     MediaController mediaController;
 
+    private String videoName;
+    private String search;
+
     StorageReference storageReference;
     DatabaseReference databaseReference;
     MemberVideo memberVideo;
     UploadTask uploadTask;
-
-    FirebaseAuth mAuth;
 
     private final String TAG ="error_finding";
 
@@ -80,6 +88,7 @@ public class MainVideo extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_video);
+
 
         memberVideo = new MemberVideo();
 
@@ -103,6 +112,17 @@ public class MainVideo extends AppCompatActivity {
                 UploadVideo();
             }
         });
+//Storage permission!
+        if(ContextCompat.checkSelfPermission(MainVideo.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
+        {
+            Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
+        }
+
+        else{
+            requestStoragePermission();
+        }
+
 
     }
 
@@ -116,14 +136,19 @@ public class MainVideo extends AppCompatActivity {
             store_video(data);
             videoUri=data.getData();
             videoView.setVideoURI(videoUri);
+            UploadVideo();
         }
     }
 
     private void store_video(Intent data) {
 
-        final String videoName=editText.getText().toString();
+        // final String videoName=Long.toString(System.currentTimeMillis()) + ".mp4" ;
 
-        final String search= editText.getText().toString().toLowerCase();
+        videoName=Long.toString(System.currentTimeMillis()) + ".mp4" ;
+
+        search= Long.toString(System.currentTimeMillis()) + ".mp4";
+
+        //final String search= Long.toString(System.currentTimeMillis()) + ".mp4";
 
         try{
             File newfile;
@@ -132,12 +157,12 @@ public class MainVideo extends AppCompatActivity {
             FileInputStream in = videoAsset.createInputStream();
 
             File filepath = Environment.getExternalStorageDirectory();
-            File dir = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
+            File dir = new File(filepath.getAbsolutePath() + VIDEO_PATH);
             if (!dir.exists()) {
                 dir.mkdirs();
             }
 
-            newfile = new File(dir, videoName + ".mp4");
+            newfile = new File(dir, videoName );
 
             if (newfile.exists()) newfile.delete();
 
@@ -186,37 +211,13 @@ public class MainVideo extends AppCompatActivity {
     private int STORAGE_PERMISSION_CODE=1;
 
     public void show_video(View view) {
-        /*
-        Intent intent = new Intent(this, ShowVideo.class);
-        Log.i(TAG, "Moving to video views");
 
-        startActivity(intent);
-         */
 
-        if(ContextCompat.checkSelfPermission(MainVideo.this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
-        {
-            Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
-        }
-
-        else{
-            requestStoragePermission();
-        }
     }
 
     private void requestStoragePermission(){
-        //  if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)){
 
-           /* new AlertDialog.Builder(this),setTitle("permission needed").setMessage(
-                    ""
-            )*/
-        //}
-
-        // else
-        //{
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},STORAGE_PERMISSION_CODE);
-        //}
-
     }
 
     @Override
@@ -236,10 +237,8 @@ public class MainVideo extends AppCompatActivity {
 
     private void UploadVideo()
     {
-
-        final String videoName=editText.getText().toString();
-
-        final String search= editText.getText().toString().toLowerCase();
+        //   final String videoName=  //Long.toString(System.currentTimeMillis())+".mp4"  ;
+        // final String search=    //Long.toString(System.currentTimeMillis()) +".mp4";
 
         if(videoUri!=null || !TextUtils.isEmpty(videoName))
         {
@@ -279,7 +278,6 @@ public class MainVideo extends AppCompatActivity {
                                 Toast.makeText(MainVideo.this, "Failed", Toast.LENGTH_SHORT).show();
                             }
 
-
                         }
                     });
 
@@ -288,70 +286,25 @@ public class MainVideo extends AppCompatActivity {
     }
 
 
-    private StorageReference mStorageRef;
+    private void downloadData(String name ,String videoURL, int dataType)
+    {
+        String pathName=VIDEO_PATH;
+        if(dataType==PICTURE)
+            pathName=PHOTO_PATH;
 
-    public void pull_video(View view) {
+        StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videoURL);
 
-        String query="foobar";
-        Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
-
-        firebaseQuery.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                for (DataSnapshot data:dataSnapshot.getChildren()){
-
-                    String output=data.getValue().toString();
-                    Log.v(TAG, "Sucessful search: "+output);
-                    //Records models=data.getValue(Records.class);
-                    //String latitude=models.getLatitude();
-                    //String longitude=models.getLongitude();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.v(TAG, "Failed search");
-
-            }
-        });
-
-        // String videourl = // dataSnapshot.child("photo").getValue(String.class);
-
-        //StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videourl);
-
-/*
-       // StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl
-         //       (photo);
-*/
-
-/*
-        videoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-            @Override
-            public void onSuccess(Uri uri) {
-             //   download_video();
-
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.i("foobar", "Cannot write because:", e);
-                e.printStackTrace();
-            }
-        });
-
-*/
         File filepath = Environment.getExternalStorageDirectory();
-        File localFile = new File(filepath.getAbsolutePath() + "/Drone Reporter/Videos");
+        File localFile = new File(filepath.getAbsolutePath() + pathName);
         if (!localFile.exists()) {
             localFile.mkdirs();
         }
 
-        File newfile = new File(localFile, "bay_area_wallpaper" + ".jpg");
+
+        File newfile = new File(localFile, name );//+ extension);
+
 
         if (newfile.exists()) newfile.delete();
-
-        StorageReference storageRef =FirebaseStorage.getInstance().getReference().child("bay_area_wallpaper.jpg");
 
         storageRef.getFile(newfile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
@@ -365,6 +318,98 @@ public class MainVideo extends AppCompatActivity {
                 // Handle any errors
                 Log.v(TAG, "failed download");
             }});
+    }
+
+    private void searchData(String query)
+    {
+        Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
+        Log.v(TAG, "Before the listener");
+
+        firebaseQuery.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.v(TAG, "Inside the listener");
+
+                for (DataSnapshot data:dataSnapshot.getChildren()){
+
+                    String videoURL=data.child("videourl").getValue(String.class);
+                    Log.v(TAG, "Sucessful search: "+ videoURL);
+
+                    String name=data.child("name").getValue(String.class);
+                    downloadData( name, videoURL, VIDEO);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.v(TAG, "Failed search");
+            }
+        });
+    }
+
+    public void pull_video(View view) {
+
+
+        //Get a list of file names in local storage
+        String path = Environment.getExternalStorageDirectory().toString()+VIDEO_PATH;
+        File directory = new File(path);
+        File[] localFiles = directory.listFiles();
+
+        for (int i = 0; i < localFiles.length; i++)
+        {
+            Log.d(TAG, "FileName:" + localFiles[i].getName());
+        }
+
+
+        Query firebaseQuery= databaseReference.orderByChild("search");//.startAt(query).endAt(query+ "\uf8ff");
+        Log.v(TAG, "Before the listener");
+
+        firebaseQuery.addValueEventListener(new ValueEventListener() {
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.v(TAG, "Inside the listener");
+
+                //String [] search= new String[(int) dataSnapshot.getChildrenCount()];
+                for (DataSnapshot data:dataSnapshot.getChildren()){
+
+                    boolean is_local= false;
+
+                    String search_cloud=data.child("search").getValue(String.class);
+                    Log.v(TAG, "Successful access to search value: "+ search_cloud);
+
+                    for(int i=0; i<localFiles.length; i++)
+                    {
+                        Log.v(TAG, "Locally we have:"  +localFiles[i].getName());
+                        Log.v(TAG, "In the cloud we have:"  + search_cloud);
+
+                        if(search_cloud.equals(localFiles[i].getName())) {
+                            is_local = true;
+                            Log.v(TAG, "It's already in the local storage! " + search_cloud);
+                            break;
+                        }
+
+                    }
+                    if(is_local==false) {
+                        Log.v(TAG, "I am about to download!" + search_cloud);
+                        downloadData(search_cloud, data.child("videourl").getValue(String.class), VIDEO);
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.v(TAG, "Failed access to search value");
+            }
+        });
+
+
+        // searchData("foobar");
+
+
 
     }
+
 }
