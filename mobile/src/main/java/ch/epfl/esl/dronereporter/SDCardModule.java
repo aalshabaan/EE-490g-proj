@@ -1,5 +1,6 @@
 package ch.epfl.esl.dronereporter;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -29,7 +30,7 @@ public class SDCardModule {
     private static final String TAG = "SDCardModule";
 
     private static final String DRONE_MEDIA_FOLDER = "internal_000";
-    private static final String MOBILE_MEDIA_FOLDER = "/ARSDKMedias/";
+    private static final String MOBILE_MEDIA_FOLDER = "/DroneReporter/";
 
     public interface Listener {
         /**
@@ -86,7 +87,6 @@ public class SDCardModule {
         if (result == ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK) {
             // direct to external directory
             String externalDirectory = Environment.getExternalStorageDirectory().toString().concat(MOBILE_MEDIA_FOLDER);
-
             // if the directory doesn't exist, create it
             File f = new File(externalDirectory);
             if(!(f.exists() && f.isDirectory())) {
@@ -105,6 +105,7 @@ public class SDCardModule {
 
         if (result != ARDATATRANSFER_ERROR_ENUM.ARDATATRANSFER_OK) {
             // clean up here because an error happened
+            Log.e(TAG, "SDCardModule: "+result.toString() );
             mDataTransferManager.dispose();
             mDataTransferManager = null;
         }
@@ -165,6 +166,7 @@ public class SDCardModule {
                     }
 
                     notifyMatchingMediasFound(mNbMediasToDownload);
+                    Log.d(TAG, "run: Medias to Download:" + String.valueOf(mNbMediasToDownload));
 
                     if ((mediasFromDate != null) && (mNbMediasToDownload != 0) && !mIsCancelled) {
                         downloadMedias(mediasFromDate);
@@ -247,6 +249,7 @@ public class SDCardModule {
         for (ARDataTransferMedia media : mediaList) {
             // convert date in string to calendar
             String dateStr = media.getDate();
+            Log.d(TAG, "getDateMatchingMedias: DATE:" + dateStr);
             try {
                 Date mediaDate = dateFormatter.parse(dateStr);
                 mediaCal.setTime(mediaDate);

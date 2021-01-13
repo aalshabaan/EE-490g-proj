@@ -264,10 +264,11 @@ public class BebopDrone implements Serializable {
         }
     }
 
-    public void takePicture() {
+    public ARCONTROLLER_ERROR_ENUM takePicture() {
         if ((mDeviceController != null) && (mState.equals(ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING))) {
-            mDeviceController.getFeatureARDrone3().sendMediaRecordPictureV2();
+            return mDeviceController.getFeatureARDrone3().sendMediaRecordPictureV2();
         }
+        else return ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_ERROR;
     }
 
 

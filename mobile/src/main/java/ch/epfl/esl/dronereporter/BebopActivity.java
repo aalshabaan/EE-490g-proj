@@ -156,7 +156,7 @@ public class BebopActivity extends AppCompatActivity implements
 
         @Override
         public void onPictureTaken(ARCOMMANDS_ARDRONE3_MEDIARECORDEVENT_PICTUREEVENTCHANGED_ERROR_ENUM error) {
-            Log.i(TAG, "Picture has been taken");
+            Log.i(TAG, "Picture has been taken" + error.toString());
         }
 
         @Override
@@ -246,7 +246,7 @@ public class BebopActivity extends AppCompatActivity implements
         mBebopDrone = new BebopDrone(this, service);
         mBebopDrone.addListener(mBebopListener);
         mModeSwitch = findViewById(R.id.mode_selection_switch);
-        mModeSwitch.setChecked(AUTO_PILOT);
+        mModeSwitch.setChecked(MANUAL_MODE);
 
         mManualControlFragment = ManualControlFragment.getInstance();
         mAutoPilotFragment = AutopilotFragment.getInstance();
@@ -338,7 +338,10 @@ public class BebopActivity extends AppCompatActivity implements
 
         findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                mBebopDrone.takePicture();
+                if (mBebopDrone.takePicture() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK)
+                    Toast.makeText(BebopActivity.this, "Pic taken", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(BebopActivity.this, "Error", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -355,10 +358,12 @@ public class BebopActivity extends AppCompatActivity implements
                 mDownloadProgressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, "Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        Log.d(TAG, "onClick: Cancelled flight media");
                         mBebopDrone.cancelGetLastFlightMedias();
                     }
                 });
                 mDownloadProgressDialog.show();
+
             }
         });
 

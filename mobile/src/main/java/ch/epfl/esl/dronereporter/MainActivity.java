@@ -24,7 +24,6 @@ import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
 public class MainActivity extends AppCompatActivity {
 
 
-    public static final String DRONE_OBJECT = "drone";
     public static final String EXTRA_DEVICE_SERVICE = "EXTRA_DEVICE_SERVICE";
 
     private static final int SELECT_DRONE = 42;
@@ -58,18 +57,18 @@ public class MainActivity extends AppCompatActivity {
     // Add and remove the listener following the activity's life cycle
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onStop() {
+        super.onStop();
         if (mDrone != null && mDroneListener != null)
             mDrone.removeListener(mDroneListener);
     }
 
     @Override
-    protected void onResume(){
-        super.onResume();
+    protected void onStart(){
+        super.onStart();
         if (mDrone != null){
             mDrone.addListener(mDroneListener);
-            mDrone.connect();
+            //mDrone.connect();
         }
     }
 
@@ -83,11 +82,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void engageDrone(View view){
-        if(mServiceDrone == null){
+        if(!mConnected){
             Toast.makeText(this, "No drone found, connect first!", Toast.LENGTH_LONG).show();
             return;
         }
-        mDrone.disconnect();
+        //mDrone.disconnect();
         Intent i = new Intent(this, BebopActivity.class);
         i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
         startActivity(i);
@@ -104,14 +103,11 @@ public class MainActivity extends AppCompatActivity {
             startActivityForResult(i, SELECT_DRONE);
         }
         else{
-            //if(mDrone != null){
-            if(mServiceDrone != null){
-                //if(mDrone.disconnect()){
+            if(mDrone != null)
+                if(mDrone.disconnect()){
                     mConnected = false;
-                    mDrone.removeListener(mDroneListener);
                     mDrone.disconnect();
                     mConnectDisconnectButton.setText(getText(R.string.select_drone));
-                    mServiceDrone = null;
                 //}
             }
         }
@@ -131,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
              */
             mServiceDrone = data.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
             mDrone = new BebopDrone(this, mServiceDrone);
-            mDrone.connect();
+            //mDrone.connect();
             mDrone.addListener(mDroneListener);
             mConnectDisconnectButton.setText(getText(R.string.disconnect));
             mConnected = true;

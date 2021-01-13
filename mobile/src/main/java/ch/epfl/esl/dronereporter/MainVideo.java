@@ -120,7 +120,7 @@ public class MainVideo extends AppCompatActivity {
         //Get a list of file names in local storage
         String path = Environment.getExternalStorageDirectory().toString()+ MEDIA_PATH;
         File directory = new File(path);
-        File[] localFiles = directory.listFiles();
+        final File[] localFiles = directory.listFiles();
 
         for (int i = 0; i < localFiles.length; i++)
         {
