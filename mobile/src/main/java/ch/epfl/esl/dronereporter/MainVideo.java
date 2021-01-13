@@ -48,8 +48,8 @@ public class MainVideo extends AppCompatActivity {
     private static final int PICK_VIDEO=1;
     private static final int PICTURE =0 ;
     private static final int VIDEO =1 ;
-    private static final String MEDIA_PATH ="/Drone Reporter/Videos";
-    private static final String PHOTO_PATH="/Drone Reporter/Photos";
+    private static final String MEDIA_PATH ="/DroneReporter/Videos";
+    private static final String PHOTO_PATH="/DroneReporter/Photos";
 
     Button button;
     EditText editText;
@@ -86,7 +86,7 @@ public class MainVideo extends AppCompatActivity {
         if(ContextCompat.checkSelfPermission(MainVideo.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
         {
-            Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
         }
 
         else{

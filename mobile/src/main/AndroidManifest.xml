@@ -62,8 +62,7 @@
 
         </activity>
 
-        <activity android:name=".MainVideo"
-            android:screenOrientation="landscape">
+        <activity android:name=".MainVideo">
 
         </activity>
 

@@ -13,6 +13,9 @@
     <string name="distance">Distance: </string>
     <string name="angle">Angle: </string>
     <string name="altitude">Altitude: </string>
+    <string name="pic">Take Picture</string>
+    <string name="vid">Record Video</string>
+    <string name="stopVid">Stop Recording</string>
 
 
     <string name="disconnect">Disconnect Drone</string>

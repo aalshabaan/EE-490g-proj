@@ -47,6 +47,8 @@ public class BebopActivity extends AppCompatActivity implements
     private static final double LATLNG_METERS = 111139;
     private static final boolean MANUAL_MODE = true;
     private static final boolean AUTO_PILOT = false;
+    private static final boolean VIDEO = true;
+    private static final boolean PHOTO = false;
 
     private BebopDrone mBebopDrone;
 
@@ -62,8 +64,10 @@ public class BebopActivity extends AppCompatActivity implements
     private TextView mBatteryLabel;
     private Button mTakeOffLandBt;
     private Button mDownloadBt;
+    private Button mTakePictureBt;
 
     private Switch mModeSwitch;
+    private Switch mMediaSwitch;
     private BroadcastReceiver mWearBroadcastReceiver;
 
     private byte GpsStatus;
@@ -73,6 +77,7 @@ public class BebopActivity extends AppCompatActivity implements
     private double latitudeUser;
     private double longitudeUser;
     private boolean moveBool = true;
+    private boolean recording = false;
     private float rayon, altitude;
     private int angle;
 
@@ -80,7 +85,7 @@ public class BebopActivity extends AppCompatActivity implements
     private int mNbMaxDownload;
     private int mCurrentDownloadIndex;
 
-    // Define a custom drone listener using an anonymous class, doing this in the Activity
+    // Define a custom drone listener using an anonymous class, doing this in the Activity object
     // initialisation ensures that it is well defined by the time it is assigned to the drone in onCreate()
     private final BebopDrone.Listener mBebopListener = new BebopDrone.Listener() {
 
@@ -247,6 +252,9 @@ public class BebopActivity extends AppCompatActivity implements
         mBebopDrone.addListener(mBebopListener);
         mModeSwitch = findViewById(R.id.mode_selection_switch);
         mModeSwitch.setChecked(MANUAL_MODE);
+        mMediaSwitch = findViewById(R.id.media_mode_switch);
+        mMediaSwitch.setChecked(PHOTO);
+        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
 
         mManualControlFragment = ManualControlFragment.getInstance();
         mAutoPilotFragment = AutopilotFragment.getInstance();
@@ -254,6 +262,7 @@ public class BebopActivity extends AppCompatActivity implements
         initIHM();
         // manually call the callback to correctly engage the default mode
         switchMode(mModeSwitch);
+        changeMediaMode(mMediaSwitch);
         startPositionOnWear();
 
     }
@@ -335,13 +344,34 @@ public class BebopActivity extends AppCompatActivity implements
                 }
             }
         });
-
-        findViewById(R.id.takePictureBt).setOnClickListener(new View.OnClickListener() {
+        mTakePictureBt = findViewById(R.id.takePictureBt);
+        mTakePictureBt.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (mBebopDrone.takePicture() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK)
-                    Toast.makeText(BebopActivity.this, "Pic taken", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(BebopActivity.this, "Error", Toast.LENGTH_SHORT).show();
+                
+                if(mMediaSwitch.isChecked() == PHOTO) {
+                    if (mBebopDrone.takePicture() != ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK)
+                        Toast.makeText(BebopActivity.this, "Error taking picture, please check the drone's memory", Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    if(!recording) {
+                        if (mBebopDrone.recordVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
+                            recording = true;
+                            mTakePictureBt.setText(R.string.stopVid);
+                        }
+                        else {
+                            Toast.makeText(BebopActivity.this, "Error recording video, please check the drone's memory", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else {
+                        if (mBebopDrone.stopRecordingVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK){
+                            recording = false;
+                            mTakePictureBt.setText(R.string.vid);
+                        }
+                        else{
+                            Toast.makeText(BebopActivity.this, "Error stopping the recording! No idea what to do!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
             }
         });
 
@@ -366,14 +396,6 @@ public class BebopActivity extends AppCompatActivity implements
 
             }
         });
-
-
-
-
-
-
-        mBatteryLabel = (TextView) findViewById(R.id.batteryLabel);
-
     }
 
     public void moveTo(View view){
@@ -464,6 +486,18 @@ public class BebopActivity extends AppCompatActivity implements
             case AutopilotFragment.ALTITUDE:
                 altitude = value/2.0f;
                 mAutoPilotFragment.setAltitude(altitude);
+        }
+    }
+
+    public void changeMediaMode(View view){
+        boolean mode = ((Switch)view).isChecked();
+        if (mode == VIDEO){
+            mMediaSwitch.setThumbResource(R.drawable.ic_baseline_videocam_24);
+            mTakePictureBt.setText(R.string.vid);
+        }
+        else{
+            mMediaSwitch.setThumbResource(R.drawable.ic_baseline_photo_camera_24);
+            mTakePictureBt.setText(R.string.pic);
         }
     }
 }

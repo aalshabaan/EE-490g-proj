@@ -21,7 +21,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Take picture"
+        android:text="@string/pic"
         android:id="@+id/takePictureBt"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
@@ -79,5 +79,13 @@
         android:layout_below="@id/batteryLabel"
         android:layout_alignParentLeft="true"
         android:onClick="switchMode"
+        android:alpha="1"/>
+    <Switch
+        android:id="@+id/media_mode_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/batteryLabel"
+        android:layout_toLeftOf="@id/takePictureBt"
+        android:onClick="changeMediaMode"
         android:alpha="1"/>
 </RelativeLayout>
