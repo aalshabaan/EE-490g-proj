@@ -116,9 +116,9 @@ public class WearService extends WearableListenerService {
                                 .W_longitude_key);
                         double latitude = dataMapItem.getDataMap().getDouble(BuildConfig
                                 .W_latitude_key);
-                        intent = new Intent(ReporterActivity.RECEIVED_LOCATION);
-                        intent.putExtra(ReporterActivity.LONGITUDE, longitude);
-                        intent.putExtra(ReporterActivity.LATITUDE, latitude);
+                        intent = new Intent(BebopActivity.RECEIVED_LOCATION);
+                        intent.putExtra(BebopActivity.LONGITUDE, longitude);
+                        intent.putExtra(BebopActivity.LATITUDE, latitude);
                         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
                         break;
                     default:

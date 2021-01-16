@@ -42,15 +42,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 
 public class MainVideo extends AppCompatActivity {
 
     private static final int PICK_VIDEO=1;
     private static final int PICTURE =0 ;
     private static final int VIDEO =1 ;
-    private static final String MEDIA_PATH ="/DroneReporter/Videos";
-    private static final String PHOTO_PATH="/DroneReporter/Photos";
-
+    private static final String MEDIA_ROOT = "/DroneReporter/";
+    private static final String MEDIA_PATH ="/DroneReporter/videos/";
+    private static final String PHOTO_PATH ="/DroneReporter/photos/";
     Button button;
     EditText editText;
     Button ShowVideosButton;
@@ -99,7 +103,9 @@ public class MainVideo extends AppCompatActivity {
     public void StoreMedia(View view) {
 
         Intent intent = new Intent();
-        intent.setType("*/*");
+        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory().getPath()+ MEDIA_PATH);
+        Log.d(TAG, "StoreMedia: PATH in StoreMedia" + myDir.getPath());
+        intent.setDataAndType(myDir,"*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,PICK_VIDEO);
 
@@ -107,10 +113,13 @@ public class MainVideo extends AppCompatActivity {
 
     public void showMedia(View view) {
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory().getPath()+ MEDIA_PATH);
+
+        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory().getPath()+ MEDIA_ROOT);
+        Intent intent = new Intent(Intent.ACTION_VIEW,myDir);
+        Log.i(TAG, "showMedia: PATH:" + myDir);
         intent.setDataAndType(myDir,"*/*");    // or use */*
-        startActivity(Intent.createChooser(intent, MEDIA_PATH));
+        //startActivity(Intent.createChooser(intent, "Open Folder"));
+        startActivity(intent);
 
     }
 
@@ -121,10 +130,13 @@ public class MainVideo extends AppCompatActivity {
         String path = Environment.getExternalStorageDirectory().toString()+ MEDIA_PATH;
         File directory = new File(path);
         final File[] localFiles = directory.listFiles();
-
-        for (int i = 0; i < localFiles.length; i++)
-        {
-            Log.d(TAG, "FileName:" + localFiles[i].getName());
+        if (localFiles == null){
+            Log.d(TAG, "sync: No Local files found!");
+        }
+        else {
+            for (int i = 0; i < localFiles.length; i++) {
+                Log.d(TAG, "FileName:" + localFiles[i].getName());
+            }
         }
 
 
@@ -176,7 +188,7 @@ public class MainVideo extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if((requestCode==PICK_VIDEO || resultCode ==RESULT_OK )
+        if((requestCode==PICK_VIDEO && resultCode ==RESULT_OK )
                 && (data != null) && (data.getData()!= null)){
 
             MediaUri =data.getData();
@@ -185,7 +197,7 @@ public class MainVideo extends AppCompatActivity {
             UploadMedia();
         }
 
-        if((requestCode==SHOW_STORAGE || resultCode ==RESULT_OK )
+        if((requestCode==SHOW_STORAGE && resultCode ==RESULT_OK )
                 && (data != null) && (data.getData()!= null))
         {
             Log.v(TAG, "Went to see storage!!!");
@@ -194,8 +206,9 @@ public class MainVideo extends AppCompatActivity {
 
     private void storeMediaLocally(Intent data) {
 
-        mediaName =Long.toString(System.currentTimeMillis()) + "."+getExt(MediaUri) ;
-        search= Long.toString(System.currentTimeMillis()) + "."+getExt(MediaUri);
+        mediaName = MediaUri.getLastPathSegment().substring(MediaUri.getLastPathSegment().lastIndexOf('/'));
+        Log.d(TAG, "storeMediaLocally: Filename" + mediaName);
+        search= mediaName;
 
         try{
             File newfile;
@@ -204,9 +217,11 @@ public class MainVideo extends AppCompatActivity {
             FileInputStream in = videoAsset.createInputStream();
 
             File filepath = Environment.getExternalStorageDirectory();
-            File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH);
+            String today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+            File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH + today + File.separator);
             if (!dir.exists()) {
-                dir.mkdirs();
+                if (!dir.mkdirs())
+                    Log.e(TAG, "storeMediaLocally: Unable to create folder!");;
             }
 
             newfile = new File(dir, mediaName);
@@ -275,9 +290,11 @@ public class MainVideo extends AppCompatActivity {
         //   final String videoName=  //Long.toString(System.currentTimeMillis())+".mp4"  ;
         // final String search=    //Long.toString(System.currentTimeMillis()) +".mp4";
 
-        if(MediaUri !=null || !TextUtils.isEmpty(mediaName))
+        if(MediaUri !=null && !TextUtils.isEmpty(mediaName))
         {
-            final StorageReference reference = storageReference.child(System.currentTimeMillis()+"."+getExt(MediaUri));
+
+            final StorageReference reference = storageReference.child(mediaName);
+            Log.d(TAG, "UploadMedia: Filename: " + mediaName);
             uploadTask=reference.putFile(MediaUri);
 
             Task<Uri> uritask=uploadTask.continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
