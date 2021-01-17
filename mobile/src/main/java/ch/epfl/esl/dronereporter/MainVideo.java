@@ -192,7 +192,7 @@ public class MainVideo extends AppCompatActivity {
 
             MediaUri =data.getData();
             Log.d(TAG, "onActivityResult: filename: " + getFileName(MediaUri));
-            storeMediaLocally(data);
+            //storeMediaLocally(data);
             UploadMedia();
         }
 
