@@ -398,30 +398,20 @@ public class BebopActivity extends AppCompatActivity implements
         });
     }
 
-    public void moveTo(View view){
-        moveBool = true;
-        float heading; //orientation of the drone compared the the north
-        double new_lat = latitudeUser - Math.sin(angle)*rayon/LATLNG_METERS;
-        double new_long = longitudeUser - Math.cos(angle)*rayon/LATLNG_METERS;
-        heading = (float) Math.atan2(longitudeUser-new_long,latitudeUser-new_lat);
-        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
-        Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
-    }
-
     public void moveTo(){
-        float heading; //orientation of the drone compared the the north in degrees
-        double new_lat = latitudeUser - Math.sin(toRadians(angle))*rayon/LATLNG_METERS;
-        double new_long = longitudeUser - Math.cos(toRadians(angle))*rayon/LATLNG_METERS;
-        heading = (float) Math.toDegrees(Math.atan2(longitudeUser-new_long,latitudeUser-new_lat));
-        ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
-        if (result == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_ERROR)
-            Toast.makeText(this, "move " + result, Toast .LENGTH_SHORT).show();
+        if (mBebopDrone.getFlyingState() == ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_HOVERING
+            || mBebopDrone.getFlyingState() == ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_ENUM.ARCOMMANDS_ARDRONE3_PILOTINGSTATE_FLYINGSTATECHANGED_STATE_FLYING){
+            float heading; //orientation of the drone compared the the north in degrees
+            double new_lat = latitudeUser - Math.sin(toRadians(angle)) * rayon / LATLNG_METERS;
+            double new_long = longitudeUser - Math.cos(toRadians(angle)) * rayon / LATLNG_METERS;
+            heading = (float) Math.toDegrees(Math.atan2(longitudeUser - new_long, latitudeUser - new_lat));
+            ARCONTROLLER_ERROR_ENUM result = mBebopDrone.goToGPSLocation(new_lat, new_long, altitude, heading);
+            if (result == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_ERROR)
+                Toast.makeText(this, "move " + result, Toast.LENGTH_SHORT).show();
+        }
     }
 
-    public void cancelMoveTo(View view){
-        moveBool = false;
-        mBebopDrone.cancelGoTo();
-    }
+
 
     public void switchMode(View view){
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
@@ -487,6 +477,7 @@ public class BebopActivity extends AppCompatActivity implements
                 altitude = value/2.0f;
                 mAutoPilotFragment.setAltitude(altitude);
         }
+        moveTo();
     }
 
     public void changeMediaMode(View view){

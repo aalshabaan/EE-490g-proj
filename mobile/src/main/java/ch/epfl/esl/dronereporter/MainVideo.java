@@ -5,9 +5,11 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -52,11 +54,9 @@ public class MainVideo extends AppCompatActivity {
     private static final int PICK_VIDEO=1;
     private static final int PICTURE =0 ;
     private static final int VIDEO =1 ;
-    private static final String MEDIA_ROOT = "/DroneReporter/";
-    private static final String MEDIA_PATH ="/DroneReporter/videos/";
-    private static final String PHOTO_PATH ="/DroneReporter/photos/";
-    Button button;
-    EditText editText;
+    private static final String MEDIA_PATH ="/DroneReporter/";
+
+
     Button ShowVideosButton;
 
     private Uri MediaUri;
@@ -80,9 +80,7 @@ public class MainVideo extends AppCompatActivity {
 
         storageReference= FirebaseStorage.getInstance().getReference("Media");
         databaseReference= FirebaseDatabase.getInstance().getReference("media");
-
-        // videoView= findViewById(R.id.video_view_main);
-        //button=findViewById(R.id.button_upload_main);
+        
         ShowVideosButton=findViewById(R.id.ButtonGoToVideo);
 
 
@@ -91,6 +89,7 @@ public class MainVideo extends AppCompatActivity {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
         {
             //Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "onCreate: We have external storage permission");
         }
 
         else{
@@ -114,10 +113,10 @@ public class MainVideo extends AppCompatActivity {
     public void showMedia(View view) {
 
 
-        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory().getPath()+ MEDIA_ROOT);
+        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory().getPath()+ MEDIA_PATH);
         Intent intent = new Intent(Intent.ACTION_VIEW,myDir);
         Log.i(TAG, "showMedia: PATH:" + myDir);
-        intent.setDataAndType(myDir,"*/*");    // or use */*
+        //intent.setDataAndType(myDir,"*/*");    // or use */*
         //startActivity(Intent.createChooser(intent, "Open Folder"));
         startActivity(intent);
 
@@ -142,7 +141,7 @@ public class MainVideo extends AppCompatActivity {
 
         Query firebaseQuery= databaseReference.orderByChild("search");//.startAt(query).endAt(query+ "\uf8ff");
         Log.v(TAG, "Before the listener");
-
+        Toast.makeText(this, "Synchronising with the cloud", Toast.LENGTH_SHORT).show();
         firebaseQuery.addValueEventListener(new ValueEventListener() {
 
             @Override
@@ -192,7 +191,7 @@ public class MainVideo extends AppCompatActivity {
                 && (data != null) && (data.getData()!= null)){
 
             MediaUri =data.getData();
-
+            Log.d(TAG, "onActivityResult: filename: " + getFileName(MediaUri));
             storeMediaLocally(data);
             UploadMedia();
         }
@@ -206,7 +205,9 @@ public class MainVideo extends AppCompatActivity {
 
     private void storeMediaLocally(Intent data) {
 
-        mediaName = MediaUri.getLastPathSegment().substring(MediaUri.getLastPathSegment().lastIndexOf('/'));
+        mediaName = getFileName(MediaUri);
+        Log.d(TAG, "storeMediaLocally: PATH" + MediaUri.getPath());
+
         Log.d(TAG, "storeMediaLocally: Filename" + mediaName);
         search= mediaName;
 
@@ -217,7 +218,7 @@ public class MainVideo extends AppCompatActivity {
             FileInputStream in = videoAsset.createInputStream();
 
             File filepath = Environment.getExternalStorageDirectory();
-            String today = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(new Date());
+            String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
             File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH + today + File.separator);
             if (!dir.exists()) {
                 if (!dir.mkdirs())
@@ -341,8 +342,6 @@ public class MainVideo extends AppCompatActivity {
     private void downloadData(String name ,String videoURL, int dataType)
     {
         String pathName= MEDIA_PATH;
-        if(dataType==PICTURE)
-            pathName=PHOTO_PATH;
 
         StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videoURL);
 
@@ -400,6 +399,26 @@ public class MainVideo extends AppCompatActivity {
         });
     }
 
-
+    private String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
+    }
 
 }

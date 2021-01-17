@@ -1,7 +1,10 @@
 package ch.epfl.esl.dronereporter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -36,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageView mBatteryImageView;
     private Button mConnectDisconnectButton;
     private boolean mConnected = false;
+    private boolean mTryingToPilot = false;
 
 
     @Override
@@ -68,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         if (mDrone != null){
             mDrone.addListener(mDroneListener);
-            //mDrone.connect();
+            mDrone.connect();
         }
     }
 
@@ -86,29 +90,31 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "No drone found, connect first!", Toast.LENGTH_LONG).show();
             return;
         }
-        //mDrone.disconnect();
-        Intent i = new Intent(this, BebopActivity.class);
-        i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
-        startActivity(i);
+        mTryingToPilot = true;
+        mDrone.disconnect();
+        // Once the drone is disconnected from the Main Activity, the Listener will safely launch the piloting activity
     }
 
     public void reviewFootage(View view){
-        Intent i = new Intent(this, MainVideo.class);
-        startActivity(i);
+
+            Intent i = new Intent(this, MainVideo.class);
+            startActivity(i);
     }
 
     public void selectDrone(View view){
         if(!mConnected) {
             Intent i = new Intent(this, DeviceListActivity.class);
             startActivityForResult(i, SELECT_DRONE);
+
         }
         else{
             if(mDrone != null)
-                if(mDrone.disconnect()){
-                    mConnected = false;
-                    mDrone.disconnect();
-                    mConnectDisconnectButton.setText(getText(R.string.select_drone));
-                //}
+            {
+                if(mDrone.disconnect())
+                mConnected = false;
+                mDrone.disconnect();
+                mConnectDisconnectButton.setText(getText(R.string.select_drone));
+
             }
         }
     }
@@ -117,29 +123,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == SELECT_DRONE && resultCode == RESULT_OK){
-            /*
-            mDrone = (BebopDrone) data.getSerializableExtra(DRONE_OBJECT);
-            if (mDroneListener == null){
-                mDroneListener = new MainActivityDroneListener();
-            }
-            mDrone.addListener(mDroneListener);
 
-             */
             mServiceDrone = data.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
             mDrone = new BebopDrone(this, mServiceDrone);
-            //mDrone.connect();
+            //mDrone.connect(); This is now done in OnStart to cover the case of coming back from the piloting activity
             mDrone.addListener(mDroneListener);
             mConnectDisconnectButton.setText(getText(R.string.disconnect));
             mConnected = true;
-            //Toast.makeText(MainActivity.this, "Activity result", Toast.LENGTH_SHORT).show();
+
 
         }
 
     }
-
-
-
-
+    
+    private boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
+    }
 
     private class MainActivityDroneListener implements BebopDrone.Listener{
 
@@ -155,7 +163,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onDroneConnectionChanged(ARCONTROLLER_DEVICE_STATE_ENUM state) {
-
+            if (state == ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_RUNNING){
+                Log.d(TAG, "onDroneConnectionChanged: Drone Connection Successful");
+            }
+            if (state == ARCONTROLLER_DEVICE_STATE_ENUM.ARCONTROLLER_DEVICE_STATE_STOPPED){
+                if (mTryingToPilot){
+                    mTryingToPilot = false;
+                    Intent i = new Intent(MainActivity.this, BebopActivity.class);
+                    i.putExtra(EXTRA_DEVICE_SERVICE, mServiceDrone);
+                    startActivity(i);
+                }
+                else {
+                    Log.d(TAG, "onDroneConnectionChanged: Drone Disconnected Completely" );
+                }
+            }
         }
 
         @Override
