@@ -39,7 +39,7 @@ public class WearService extends WearableListenerService {
 
     // Actions defined for the onStartCommand(...)
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, LOCATION;
+        STARTACTIVITY, RECORDING_SIGNAL, EXAMPLE_DATAMAP, MEDIA_MODE_CHANGE_SIGNAL, LOCATION;
     }
 
 
@@ -63,6 +63,26 @@ public class WearService extends WearableListenerService {
                 putDataMapRequest = PutDataMapRequest.create(BuildConfig.W_example_path_datamap);
                 sendPutDataMapRequest(putDataMapRequest);
                 break;
+            case RECORDING_SIGNAL:
+                Log.d(TAG, "onStartCommand: SENDING A RECORDING NOTIFICATION");
+                boolean recording = intent.getBooleanExtra(BuildConfig.W_recording_path, false);
+                if (recording){
+                    sendMessage(BuildConfig.W_true, BuildConfig.W_recording_path);
+                }
+                else{
+                    sendMessage(BuildConfig.W_false, BuildConfig.W_recording_path);
+                }
+                break;
+            case MEDIA_MODE_CHANGE_SIGNAL:
+
+                boolean video = intent.getBooleanExtra(BuildConfig.W_media_type_path, false);
+                Log.d(TAG, "onStartCommand: Asking to change media mode" + video);
+                if (video)
+                    //Send the same message as a stopped recording to show the correct text on the watch button
+                    sendMessage(BuildConfig.W_false, BuildConfig.W_recording_path);
+                else
+                    sendMessage(BuildConfig.W_false, BuildConfig.W_media_type_path);
+                break;
             default:
                 Log.w(TAG, "Unknown action");
                 break;
@@ -82,6 +102,9 @@ public class WearService extends WearableListenerService {
                 + "\", from node " + messageEvent.getSourceNodeId());
 
         switch (path) {
+            case BuildConfig.W_media_action_path:
+                Intent intent = new Intent(BebopActivity.TAKE_MEDIA_ACTION);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
             default:
                 Log.w(TAG, "Received a message for unknown path " + path + " : " + data);
         }

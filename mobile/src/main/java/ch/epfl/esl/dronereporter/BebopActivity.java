@@ -15,8 +15,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainerView;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -27,8 +25,6 @@ import com.parrot.arsdk.arcontroller.ARCONTROLLER_ERROR_ENUM;
 import com.parrot.arsdk.arcontroller.ARControllerCodec;
 import com.parrot.arsdk.arcontroller.ARFrame;
 import com.parrot.arsdk.ardiscovery.ARDiscoveryDeviceService;
-
-import io.github.controlwear.virtual.joystick.android.JoystickView;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.round;
@@ -42,6 +38,7 @@ public class BebopActivity extends AppCompatActivity implements
     public static final String RECEIVED_LOCATION = "RECEIVE_LOCATION";
     public static final String LONGITUDE = "LONGITUDE";
     public static final String LATITUDE = "LATITUDE";
+    public static final String TAKE_MEDIA_ACTION = "TAKE_MEDIA_ACTION";
 
     //conversion from Latitude/Longitude Degrees to meters
     private static final double LATLNG_METERS = 111139;
@@ -69,6 +66,7 @@ public class BebopActivity extends AppCompatActivity implements
     private Switch mModeSwitch;
     private Switch mMediaSwitch;
     private BroadcastReceiver mWearBroadcastReceiver;
+    private BroadcastReceiver mWearMediaActionReceiver;
 
     private byte GpsStatus;
     private double latitudeDrone;
@@ -78,6 +76,7 @@ public class BebopActivity extends AppCompatActivity implements
     private double longitudeUser;
     private boolean moveBool = true;
     private boolean recording = false;
+    private boolean mode = false;
     private float rayon, altitude;
     private int angle;
 
@@ -225,8 +224,6 @@ public class BebopActivity extends AppCompatActivity implements
        mWearBroadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //Log.d(TAG, "watch position");
-                //Bundle b = getIntent().getExtras();
                 double prevLat = latitudeUser;
                 double prevLong = longitudeUser;
                 latitudeUser = intent.getDoubleExtra(LATITUDE,-1);
@@ -242,9 +239,36 @@ public class BebopActivity extends AppCompatActivity implements
                     moveTo();
                 }
 
-
             }
         };
+       mWearMediaActionReceiver = new BroadcastReceiver() {
+           @Override
+           public void onReceive(Context context, Intent intent) {
+               if(mode == PHOTO) {
+                   if (mBebopDrone.takePicture() != ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK)
+                       Toast.makeText(BebopActivity.this, "Error taking picture, please check the drone's memory", Toast.LENGTH_SHORT).show();
+               }
+               else {
+                   if (!recording) {
+                       if (mBebopDrone.recordVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
+                           recording = true;
+                           mTakePictureBt.setText(R.string.stopVid);
+                       } else {
+                           Toast.makeText(BebopActivity.this, "Error recording video, please check the drone's memory", Toast.LENGTH_SHORT).show();
+                       }
+                   } else {
+                       if (mBebopDrone.stopRecordingVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
+                           recording = false;
+                           mTakePictureBt.setText(R.string.vid);
+                       } else {
+                           Toast.makeText(BebopActivity.this, "Error stopping the recording! No idea what to do!", Toast.LENGTH_SHORT).show();
+                       }
+                   }
+               }
+           }
+       };
+       LocalBroadcastManager.getInstance(this).registerReceiver(mWearMediaActionReceiver, new IntentFilter(TAKE_MEDIA_ACTION));
+
         Intent intent = getIntent();
         ARDiscoveryDeviceService service = intent.getParcelableExtra(DeviceListActivity.EXTRA_DEVICE_SERVICE);
         //mBebopDrone = (BebopDrone) intent.getSerializableExtra(MainActivity.DRONE_OBJECT);
@@ -356,6 +380,10 @@ public class BebopActivity extends AppCompatActivity implements
                     if(!recording) {
                         if (mBebopDrone.recordVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
                             recording = true;
+                            Intent i = new Intent(BebopActivity.this, WearService.class);
+                            i.setAction(WearService.ACTION_SEND.RECORDING_SIGNAL.name());
+                            i.putExtra(BuildConfig.W_recording_path, true);
+                            startService(i);
                             mTakePictureBt.setText(R.string.stopVid);
                         }
                         else {
@@ -365,6 +393,10 @@ public class BebopActivity extends AppCompatActivity implements
                     else {
                         if (mBebopDrone.stopRecordingVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK){
                             recording = false;
+                            Intent i = new Intent(BebopActivity.this, WearService.class);
+                            i.setAction(WearService.ACTION_SEND.RECORDING_SIGNAL.name());
+                            i.putExtra(BuildConfig.W_recording_path, false);
+                            startService(i);
                             mTakePictureBt.setText(R.string.vid);
                         }
                         else{
@@ -481,7 +513,11 @@ public class BebopActivity extends AppCompatActivity implements
     }
 
     public void changeMediaMode(View view){
-        boolean mode = ((Switch)view).isChecked();
+        mode = ((Switch)view).isChecked();
+        Intent intent = new Intent(this, WearService.class);
+        intent.setAction(WearService.ACTION_SEND.MEDIA_MODE_CHANGE_SIGNAL.name());
+        intent.putExtra(BuildConfig.W_media_type_path, mode);
+        startService(intent);
         if (mode == VIDEO){
             mMediaSwitch.setThumbResource(R.drawable.ic_baseline_videocam_24);
             mTakePictureBt.setText(R.string.vid);

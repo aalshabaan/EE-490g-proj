@@ -40,7 +40,7 @@ public class WearService extends WearableListenerService {
 
     // Actions defined for the onStartCommand(...)
     public enum ACTION_SEND {
-        STARTACTIVITY, MESSAGE, EXAMPLE_DATAMAP, EXAMPLE_ASSET, LOCATION;
+        STARTACTIVITY, MEDIA_ACTION_SIGNAL, EXAMPLE_DATAMAP, EXAMPLE_ASSET, LOCATION;
     }
 
 
@@ -63,6 +63,10 @@ public class WearService extends WearableListenerService {
                 putDataMapRequest.getDataMap().putDouble(BuildConfig.W_longitude_key, intent
                         .getDoubleExtra(LONGITUDE, -1));
                 sendPutDataMapRequest(putDataMapRequest);
+                break;
+            case MEDIA_ACTION_SIGNAL:
+                Log.d(TAG, "onStartCommand: Sending a media action signal");
+                sendMessage(BuildConfig.W_true, BuildConfig.W_media_action_path);
                 break;
             default:
                 Log.w(TAG, "Unknown action");
@@ -102,6 +106,25 @@ public class WearService extends WearableListenerService {
                 }
                 startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(startIntent);
+                break;
+
+            case BuildConfig.W_recording_path:
+                Log.d(TAG, "onMessageReceived: Received a recording signal");
+                boolean on = data.equals(BuildConfig.W_true);
+                Intent intent = new Intent(WearReporterActivity.RECORDING_STATE_CHANGED);
+                intent.putExtra(WearReporterActivity.RECORDING_STATE, on);
+                intent.putExtra(WearReporterActivity.MEDIA_TYPE, true); // true = video
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+                break;
+
+            case BuildConfig.W_media_type_path:
+
+                boolean video = data.equals(BuildConfig.W_true);
+                Log.d(TAG, "onMessageReceived: Changing Media Mode" + video);
+                Intent i = new Intent(WearReporterActivity.MEDIA_TYPE_CHANGED);
+                i.putExtra(WearReporterActivity.MEDIA_TYPE, video);
+                i.putExtra(WearReporterActivity.RECORDING_STATE, false); //false = not recording
+                LocalBroadcastManager.getInstance(this).sendBroadcast(i);
                 break;
             default:
                 Log.w(TAG, "Received a message for unknown path " + path + " : " + data);

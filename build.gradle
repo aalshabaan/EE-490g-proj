@@ -48,6 +48,13 @@ allprojects {
                 location_path       : "/LOCATION",
                 longitude_key       : "longitude",
                 latitude_key        : "latitude",
+
+                media_type_path     : "VIDEO?",
+                recording_path      : "Recording?",
+                true                : "true",
+                false               : "false",
+
+                media_action_path   : "capture"
         ]
     }
 }

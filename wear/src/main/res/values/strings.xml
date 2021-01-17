@@ -7,4 +7,7 @@
     <string name="hello_world">Hello Square World!</string>
     <string name="location">Location</string>
     <string name="presenter_mode">Presenter mode</string>
+    <string name="startRecording">Record</string>
+    <string name="stopRecording">Stop</string>
+    <string name="takePicture">Take Picture</string>
 </resources>
