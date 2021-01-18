@@ -24,6 +24,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -105,7 +106,6 @@ public class MainVideo extends AppCompatActivity {
         intent.setDataAndType(myDir,"*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,DELETE_MEDIA);
-
     }
 
 
@@ -185,7 +185,8 @@ public class MainVideo extends AppCompatActivity {
                     }
                     if(is_local==false) {
                         Log.v(TAG, "I am about to download!" + search_cloud);
-                        downloadData(search_cloud, data.child("videourl").getValue(String.class), VIDEO);
+                        downloadData(search_cloud, data.child("videourl").getValue(String.class), MEDIA_PATH); //Sync with media folder
+                        downloadData(search_cloud, data.child("videourl").getValue(String.class), CLOUD_PATH); //Sync with cloud folder
                     }
                 }
 
@@ -428,14 +429,14 @@ public class MainVideo extends AppCompatActivity {
     }
 
 
-    private void downloadData(String name ,String videoURL, int dataType)
+    private void downloadData(String name ,String videoURL, String storageLocation)
     {
         StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videoURL);
         File filepath = Environment.getExternalStorageDirectory();
 
         //First we download in the media path!
 
-        File localFile = new File(filepath.getAbsolutePath() + MEDIA_PATH);
+        File localFile = new File(filepath.getAbsolutePath() + storageLocation);
         if (!localFile.exists()) {
             localFile.mkdirs();
         }
@@ -457,31 +458,7 @@ public class MainVideo extends AppCompatActivity {
                 Log.v(TAG, "failed download");
             }});
 
-//Then we download to the cloud folder
-/*
-        File cloudFile = new File(filepath.getAbsolutePath() + CLOUD_PATH);
-        if (!cloudFile.exists()) {
-            cloudFile.mkdirs();
-        }
 
-        File newCloudFile = new File(cloudFile, name );
-
-        if (newCloudFile.exists()) newCloudFile.delete();
-
-        storageRef.getFile(newCloudFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                // Local temp file has been created
-                Log.v(TAG, "successful download");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle any errors
-                Log.v(TAG, "failed download");
-            }});
-
- */
 
     }
 
@@ -502,7 +479,7 @@ public class MainVideo extends AppCompatActivity {
                     Log.v(TAG, "Sucessful search: "+ videoURL);
 
                     String name=data.child("name").getValue(String.class);
-                    downloadData( name, videoURL, VIDEO);
+                    downloadData( name, videoURL, MEDIA_PATH);
                 }
             }
 
