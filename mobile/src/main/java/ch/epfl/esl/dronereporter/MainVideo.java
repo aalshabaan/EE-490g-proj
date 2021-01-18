@@ -55,8 +55,8 @@ public class MainVideo extends AppCompatActivity {
     // private static final int PICTURE =0 ;
     private static final int VIDEO =1 ;
     private static final String ABSOLUTE_PATH= "/DroneReporter/" ;
-    private static final String MEDIA_PATH = "/DroneReporter/media";
-    private static  final String CLOUD_PATH = "/DroneReporter/cloud";
+    private static final String MEDIA_PATH = "/DroneReporter/media/";
+    private static  final String CLOUD_PATH = "/DroneReporter/cloud/";
 
 
     //Button ShowVideosButton;
@@ -274,23 +274,24 @@ public class MainVideo extends AppCompatActivity {
     {
         Log.v(TAG, "I want to delete this: "+ nameFile);
         Query firebaseQuery= databaseReference.orderByChild("search");
-        Log.v(TAG, "Before the listener");
+        //  Log.v(TAG, "Before the listener");
         Toast.makeText(this, "About to delete the file", Toast.LENGTH_SHORT).show();
         firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.v(TAG, "Inside the listener");
+                //  Log.v(TAG, "Inside the listener");
                 for (DataSnapshot data:dataSnapshot.getChildren()){
 
                     String search_cloud=data.child("search").getValue(String.class);
 
-                    Log.v(TAG, "Successful access to search value: "+ search_cloud);
+                    // Log.v(TAG, "Successful access to search value: "+ search_cloud);
 
                     if(search_cloud.equals(nameFile)){
-                        Log.v(TAG, "Successful access to search value: "+ search_cloud);
+                        Log.v(TAG, "Going to delete this: "+ search_cloud);
                         String storageUrl =data.child("videourl").getValue(String.class);
                         StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(storageUrl);
 
+                        //Remove from the storage first using the url in the database
                         storageRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
@@ -305,13 +306,22 @@ public class MainVideo extends AppCompatActivity {
                             }
                         });
 
-                        data.getRef().removeValue(); //This works, removes value from database!
-                        // myFile.delete()
-                    }
+                        data.getRef().removeValue(); //Then we remove value from database!
 
+                        //deleteFile(Environment.getExternalStorageDirectory().getPath()+CLOUD_PATH+ nameFile);
+                        try {
+                            File file = new File(Environment.getExternalStorageDirectory().getPath() + CLOUD_PATH + nameFile);
+                            boolean deleted = file.delete();
+                            Log.i(TAG, "The file was  also deleted locally !");
+
+                        }
+                        catch (Exception e)
+                        {
+                            Log.i(TAG, "Could not delete the file!");
+                        }
+                    }
                 }
             }
-
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -319,7 +329,6 @@ public class MainVideo extends AppCompatActivity {
             }
         });
     }
-
 
 
     private void storeMediaLocally(Intent data) {
@@ -409,8 +418,6 @@ public class MainVideo extends AppCompatActivity {
 
     private void UploadMedia()
     {
-        //   final String videoName=  //Long.toString(System.currentTimeMillis())+".mp4"  ;
-        // final String search=    //Long.toString(System.currentTimeMillis()) +".mp4";
 
         if(MediaUri !=null && !TextUtils.isEmpty(mediaName))
         {
@@ -438,6 +445,7 @@ public class MainVideo extends AppCompatActivity {
                             {
                                 Uri downloadUri=task.getResult();
                                 Toast.makeText(MainVideo.this, "Data saved", Toast.LENGTH_SHORT).show();
+                                Log.v(TAG,"Data pushed to cloud");
 
                                 memberMedia.setName(mediaName);
                                 memberMedia.setVideourl(downloadUri.toString());
@@ -450,6 +458,8 @@ public class MainVideo extends AppCompatActivity {
                             }
                             else{
                                 Toast.makeText(MainVideo.this, "Failed", Toast.LENGTH_SHORT).show();
+                                Log.v(TAG,"Failed to push to cloud");
+
                             }
 
                         }
