@@ -1,7 +1,6 @@
 package ch.epfl.esl.dronereporter;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
@@ -9,13 +8,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.webkit.MimeTypeMap;
-import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -24,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -47,21 +42,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
-public class MainVideo extends AppCompatActivity {
+public class MainMedia extends AppCompatActivity {
 
     private static final int DELETE_MEDIA=2;
     private static final int PICK_MEDIA =1;
-    private static final int VIDEO =1 ;
+    private static final int SHOW_STORAGE=0;
+    private int STORAGE_PERMISSION_CODE=5;
+
     private static final String ABSOLUTE_PATH= "/DroneReporter/" ;
     private static final String MEDIA_PATH = "/DroneReporter/media/";
     private static  final String CLOUD_PATH = "/DroneReporter/cloud/";
-
-
-    //Button ShowVideosButton;
 
     private Uri MediaUri;
 
@@ -70,7 +61,7 @@ public class MainVideo extends AppCompatActivity {
 
     StorageReference storageReference;
     DatabaseReference databaseReference;
-    MemberVideo memberMedia;
+    MemberMedia memberMedia;
     UploadTask uploadTask;
 
     private final String TAG ="error_finding";
@@ -80,13 +71,13 @@ public class MainVideo extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_video);
 
-        memberMedia = new MemberVideo();
+        memberMedia = new MemberMedia();
 
         storageReference= FirebaseStorage.getInstance().getReference("Media");
         databaseReference= FirebaseDatabase.getInstance().getReference("media");
 
 //Storage permission!
-        if(ContextCompat.checkSelfPermission(MainVideo.this,
+        if(ContextCompat.checkSelfPermission(MainMedia.this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED)
         {
             //Toast.makeText(MainVideo.this,"You already gave the permission to write in storage",Toast.LENGTH_SHORT).show();
@@ -95,6 +86,16 @@ public class MainVideo extends AppCompatActivity {
 
         else{
             requestStoragePermission();
+        }
+        File filepath = Environment.getExternalStorageDirectory();
+        File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH );//+ today + File.separator);
+
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+
+                Log.e(TAG, "Unable to create the folder!");
+
+            }
         }
     }
 
@@ -170,8 +171,6 @@ public class MainVideo extends AppCompatActivity {
 
                     for(int i=0; i<cloudFiles.length; i++)
                     {
-                        // Log.v(TAG, "Locally we have:"  +localFiles[i].getName());
-                        // Log.v(TAG, "In the cloud we have:"  + search_cloud);
 
                         if(search_cloud.equals(cloudFiles[i].getName())) {
                             is_local = true;
@@ -199,12 +198,15 @@ public class MainVideo extends AppCompatActivity {
         File mediaDirectory = new File(mediaPath);
         final File[] mediaFiles = mediaDirectory.listFiles();
 
+        Log.d(TAG, "Getting ready local copy!") ;
 
         if (cloudFiles!=null){
+            Log.d(TAG, "There is something in the cloud files") ;
 
             for (int i = 0; i < cloudFiles.length; i++) {
                 boolean is_local= false;
-                if(mediaFiles!=null) {
+                if(mediaFiles.length!=0) {
+                    Log.d(TAG, "The media file is considered non null!"+ mediaFiles.length) ;
 
                     for (int j = 0; j < mediaFiles.length; j++) {
                         Log.d(TAG, "The media files is:"+mediaFiles[j].getName() );
@@ -219,6 +221,13 @@ public class MainVideo extends AppCompatActivity {
                             copyFile(CLOUD_PATH, cloudFiles[i].getName(), MEDIA_PATH);
                         }
                     }
+                }
+                if(mediaFiles.length==0)
+                {
+                    //Full copy if empty!
+                    Log.d(TAG, "I copied!"+cloudFiles[i].getName() );
+                    copyFile(CLOUD_PATH, cloudFiles[i].getName(), MEDIA_PATH);
+
                 }
 
             }
@@ -247,12 +256,8 @@ public class MainVideo extends AppCompatActivity {
 
             in = new FileInputStream(inputPath + inputFile);
 
-            // File newfile = new File(outputPath, inputFile);
-
-            //if (newfile.exists()) newfile.delete();
 
             out = new FileOutputStream(outputPath + inputFile);
-            //  out = new FileOutputStream(newfile);
 
 
             byte[] buffer = new byte[1024];
@@ -301,7 +306,7 @@ public class MainVideo extends AppCompatActivity {
             Log.v(TAG, "Went to see storage!!!");
         }
 
-        if((requestCode==DELETE_MEDIA && resultCode ==RESULT_OK && (data != null) && (data.getData()!= null)))
+        if((requestCode==DELETE_MEDIA && resultCode ==RESULT_OK) && (data != null) && (data.getData()!= null))
         {
             Log.v(TAG, "We may delete something! ");
             MediaUri =data.getData();
@@ -320,12 +325,9 @@ public class MainVideo extends AppCompatActivity {
         firebaseQuery.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                //  Log.v(TAG, "Inside the listener");
                 for (DataSnapshot data:dataSnapshot.getChildren()){
 
                     String search_cloud=data.child("search").getValue(String.class);
-
-                    // Log.v(TAG, "Successful access to search value: "+ search_cloud);
 
                     if(search_cloud.equals(nameFile)){
                         Log.v(TAG, "Going to delete this: "+ search_cloud);
@@ -350,7 +352,6 @@ public class MainVideo extends AppCompatActivity {
 
                         data.getRef().removeValue(); //Then we remove value from database!
 
-                        //deleteFile(Environment.getExternalStorageDirectory().getPath()+CLOUD_PATH+ nameFile);
                         try {
                             File file = new File(Environment.getExternalStorageDirectory().getPath() + CLOUD_PATH + nameFile);
                             boolean deleted = file.delete();
@@ -388,13 +389,14 @@ public class MainVideo extends AppCompatActivity {
             FileInputStream in = videoAsset.createInputStream();
 
             File filepath = Environment.getExternalStorageDirectory();
-            // String today = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-            //File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH + today + File.separator);
             File dir = new File(filepath.getAbsolutePath() + CLOUD_PATH );//+ today + File.separator);
 
             if (!dir.exists()) {
-                if (!dir.mkdirs())
-                    Log.e(TAG, "storeMediaLocally: Unable to create folder!");;
+                if (!dir.mkdirs()) {
+
+                    Log.e(TAG, "Unable to create the folder!");
+
+                }
             }
 
             newfile = new File(dir, mediaName);
@@ -423,17 +425,6 @@ public class MainVideo extends AppCompatActivity {
     }
 
 
-    private String getExt(Uri uri)
-    {
-        ContentResolver contentResolver=getContentResolver();
-        MimeTypeMap mimeTypeMap= MimeTypeMap.getSingleton();
-
-        return mimeTypeMap.getExtensionFromMimeType(contentResolver.getType(uri));
-    }
-
-    //Permission for storage and all
-    private int STORAGE_PERMISSION_CODE=1;
-    final private int SHOW_STORAGE=2;
 
 
     private void requestStoragePermission(){
@@ -486,7 +477,7 @@ public class MainVideo extends AppCompatActivity {
                             if(task.isSuccessful())
                             {
                                 Uri downloadUri=task.getResult();
-                                Toast.makeText(MainVideo.this, "Data saved", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainMedia.this, "Data saved", Toast.LENGTH_SHORT).show();
                                 Log.v(TAG,"Data pushed to cloud");
 
                                 memberMedia.setName(mediaName);
@@ -499,7 +490,7 @@ public class MainVideo extends AppCompatActivity {
 
                             }
                             else{
-                                Toast.makeText(MainVideo.this, "Failed", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainMedia.this, "Failed", Toast.LENGTH_SHORT).show();
                                 Log.v(TAG,"Failed to push to cloud");
 
                             }
@@ -517,7 +508,7 @@ public class MainVideo extends AppCompatActivity {
         StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videoURL);
         File filepath = Environment.getExternalStorageDirectory();
 
-        //First we download in the media path!
+        //First we download in the cloud path!
 
         File localFile = new File(filepath.getAbsolutePath() + storageLocation);
         if (!localFile.exists()) {
@@ -544,35 +535,6 @@ public class MainVideo extends AppCompatActivity {
 
 
     }
-
-    private void searchData(String query)
-    {
-        Query firebaseQuery= databaseReference.orderByChild("search").startAt(query).endAt(query+ "\uf8ff");
-        Log.v(TAG, "Before the listener");
-
-        firebaseQuery.addValueEventListener(new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.v(TAG, "Inside the listener");
-
-                for (DataSnapshot data:dataSnapshot.getChildren()){
-
-                    String videoURL=data.child("videourl").getValue(String.class);
-                    Log.v(TAG, "Sucessful search: "+ videoURL);
-
-                    String name=data.child("name").getValue(String.class);
-                    downloadData( name, videoURL, MEDIA_PATH);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.v(TAG, "Failed search");
-            }
-        });
-    }
-
     private String getFileName(Uri uri) {
         String result = null;
         if (uri.getScheme().equals("content")) {
@@ -594,6 +556,8 @@ public class MainVideo extends AppCompatActivity {
         }
         return result;
     }
+
+
 
 
 }

@@ -1,12 +1,12 @@
 package ch.epfl.esl.dronereporter;
 
-public class MemberVideo {
+public class MemberMedia {
 
     private String name;
     private String Videourl;
     private String search;
 
-    public MemberVideo(){}
+    public MemberMedia(){}
 
 
     public String getName() {
