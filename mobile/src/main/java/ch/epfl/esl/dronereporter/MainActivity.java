@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void reviewFootage(View view){
 
-            Intent i = new Intent(this, MainVideo.class);
+            Intent i = new Intent(this, MainMedia.class);
             startActivity(i);
     }
 

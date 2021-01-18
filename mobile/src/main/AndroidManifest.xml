@@ -22,8 +22,7 @@
         android:roundIcon="@mipmap/drone_icon_round"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true"
-        android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true">
+        android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main">
@@ -63,7 +62,7 @@
 
         </activity>
 
-        <activity android:name=".MainVideo">
+        <activity android:name=".MainMedia">
 
         </activity>
 

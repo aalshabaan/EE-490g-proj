@@ -69,7 +69,7 @@ public class MainMedia extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_video);
+        setContentView(R.layout.activity_main_media);
 
         memberMedia = new MemberMedia();
 
@@ -168,16 +168,20 @@ public class MainMedia extends AppCompatActivity {
 
                     String search_cloud=data.child("search").getValue(String.class);
                     Log.v(TAG, "Successful access to search value: "+ search_cloud);
-
-                    for(int i=0; i<cloudFiles.length; i++)
+                    if (cloudFiles == null)
                     {
+                        Toast.makeText(MainMedia.this, "No Files in the Cloud", Toast.LENGTH_SHORT).show();;
+                    }
+                    else {
+                        for (int i = 0; i < cloudFiles.length; i++) {
 
-                        if(search_cloud.equals(cloudFiles[i].getName())) {
-                            is_local = true;
-                            // Log.v(TAG, "It's already in the local cloud storage! " + search_cloud);
-                            break;
+                            if (search_cloud.equals(cloudFiles[i].getName())) {
+                                is_local = true;
+                                // Log.v(TAG, "It's already in the local cloud storage! " + search_cloud);
+                                break;
+                            }
+
                         }
-
                     }
                     if(is_local==false) {
                         Log.v(TAG, "I am about to download!" + search_cloud);
