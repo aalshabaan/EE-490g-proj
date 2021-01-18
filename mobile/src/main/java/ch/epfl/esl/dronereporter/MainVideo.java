@@ -96,31 +96,7 @@ public class MainVideo extends AppCompatActivity {
         else{
             requestStoragePermission();
         }
-        //createLocalFiles();
-
     }
-/*
-    private void createLocalFiles()
-    {
-        File filepath = Environment.getExternalStorageDirectory();
-
-        File cloudDir = new File(filepath.getAbsolutePath() + CLOUD_PATH );
-
-        if (!cloudDir.exists()) {
-            if (!cloudDir.mkdirs())
-                Log.e(TAG, "CreateLocalFiles: Unable to create cloud folder!");;
-        }
-
-        File dir = new File(filepath.getAbsolutePath() + MEDIA_PATH );
-
-        if (!dir.exists()) {
-            if (!dir.mkdirs())
-                Log.e(TAG, "CreateLocalFiles: Unable to create media folder!!");;
-        }
-
-    }
-*/
-
 
     public void deleteCloud(View view) {
         Intent intent = new Intent();
@@ -129,7 +105,6 @@ public class MainVideo extends AppCompatActivity {
         intent.setDataAndType(myDir,"*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(intent,DELETE_MEDIA);
-
 
     }
 
@@ -145,22 +120,11 @@ public class MainVideo extends AppCompatActivity {
     }
 
     public void showMedia(View view) {
-/*
-        Uri myDir = Uri.parse("file://"+Environment.getExternalStorageDirectory().getPath()+ MEDIA_PATH);
-        Intent intent = new Intent(Intent.ACTION_VIEW,myDir);
-        Log.i(TAG, "showMedia: PATH:" + myDir);
-        try{
-            startActivity(intent);
 
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            Log.i(TAG, "copy NOT successful");
-            }
- */
-        Uri selectedUri = Uri.parse(Environment.getExternalStorageDirectory() + ABSOLUTE_PATH);
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(selectedUri, "resource/folder");
+        Uri myDir = Uri.parse(Environment.getExternalStorageDirectory() + ABSOLUTE_PATH);
+        Intent intent = new Intent(Intent.ACTION_VIEW,myDir);
+        //  Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT_TREE,myDir);
+        intent.setDataAndType(myDir, "*/*");
 
         if (intent.resolveActivityInfo(getPackageManager(), 0) != null)
         {
@@ -170,15 +134,9 @@ public class MainVideo extends AppCompatActivity {
         else
         {
             Log.i(TAG, "Could not show the storage!");
-
         }
 
-
-
-
-
     }
-
 
 
     public void sync(View view) {
@@ -472,19 +430,17 @@ public class MainVideo extends AppCompatActivity {
 
     private void downloadData(String name ,String videoURL, int dataType)
     {
-        String pathName= MEDIA_PATH;
-
         StorageReference storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(videoURL);
-
         File filepath = Environment.getExternalStorageDirectory();
-        File localFile = new File(filepath.getAbsolutePath() + pathName);
+
+        //First we download in the media path!
+
+        File localFile = new File(filepath.getAbsolutePath() + MEDIA_PATH);
         if (!localFile.exists()) {
             localFile.mkdirs();
         }
 
-
         File newfile = new File(localFile, name );//+ extension);
-
 
         if (newfile.exists()) newfile.delete();
 
@@ -500,6 +456,33 @@ public class MainVideo extends AppCompatActivity {
                 // Handle any errors
                 Log.v(TAG, "failed download");
             }});
+
+//Then we download to the cloud folder
+/*
+        File cloudFile = new File(filepath.getAbsolutePath() + CLOUD_PATH);
+        if (!cloudFile.exists()) {
+            cloudFile.mkdirs();
+        }
+
+        File newCloudFile = new File(cloudFile, name );
+
+        if (newCloudFile.exists()) newCloudFile.delete();
+
+        storageRef.getFile(newCloudFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                // Local temp file has been created
+                Log.v(TAG, "successful download");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                Log.v(TAG, "failed download");
+            }});
+
+ */
+
     }
 
     private void searchData(String query)
