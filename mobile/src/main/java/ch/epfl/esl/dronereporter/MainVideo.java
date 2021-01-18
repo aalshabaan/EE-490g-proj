@@ -208,8 +208,8 @@ public class MainVideo extends AppCompatActivity {
 
             MediaUri =data.getData();
             Log.d(TAG, "onActivityResult: filename: " + getFileName(MediaUri));
-            UploadMedia();
             storeMediaLocally(data);
+            UploadMedia();
         }
 
         if((requestCode==SHOW_STORAGE && resultCode ==RESULT_OK )
