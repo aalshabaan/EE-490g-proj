@@ -253,6 +253,7 @@ public class BebopActivity extends AppCompatActivity implements
                        if (mBebopDrone.recordVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
                            recording = true;
                            mTakePictureBt.setText(R.string.stopVid);
+                           mMediaSwitch.setEnabled(false);
                        } else {
                            Toast.makeText(BebopActivity.this, "Error recording video, please check the drone's memory", Toast.LENGTH_SHORT).show();
                        }
@@ -260,6 +261,7 @@ public class BebopActivity extends AppCompatActivity implements
                        if (mBebopDrone.stopRecordingVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
                            recording = false;
                            mTakePictureBt.setText(R.string.vid);
+                           mMediaSwitch.setEnabled(true);
                        } else {
                            Toast.makeText(BebopActivity.this, "Error stopping the recording! No idea what to do!", Toast.LENGTH_SHORT).show();
                        }
@@ -380,6 +382,7 @@ public class BebopActivity extends AppCompatActivity implements
                     if(!recording) {
                         if (mBebopDrone.recordVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK) {
                             recording = true;
+                            mMediaSwitch.setEnabled(false);
                             Intent i = new Intent(BebopActivity.this, WearService.class);
                             i.setAction(WearService.ACTION_SEND.RECORDING_SIGNAL.name());
                             i.putExtra(BuildConfig.W_recording_path, true);
@@ -393,6 +396,7 @@ public class BebopActivity extends AppCompatActivity implements
                     else {
                         if (mBebopDrone.stopRecordingVideo() == ARCONTROLLER_ERROR_ENUM.ARCONTROLLER_OK){
                             recording = false;
+                            mMediaSwitch.setEnabled(true);
                             Intent i = new Intent(BebopActivity.this, WearService.class);
                             i.setAction(WearService.ACTION_SEND.RECORDING_SIGNAL.name());
                             i.putExtra(BuildConfig.W_recording_path, false);
